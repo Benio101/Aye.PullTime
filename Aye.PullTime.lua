@@ -294,6 +294,7 @@ Aye.modules.PullTime.events.COMBAT_LOG_EVENT_UNFILTERED = function(...)
 	-- note only first threat situation update
 	if Aye.modules.PullTime.meters.hit ~= nil then return end;
 	
+	local _, event, _, sourceGUID, sourceName, sourceFlags, _, _, destName, destFlags = ...;
 	if not string.match(event, "_DAMAGE$") then return end;
 	
 	if
@@ -308,6 +309,7 @@ Aye.modules.PullTime.events.COMBAT_LOG_EVENT_UNFILTERED = function(...)
 		return;
 	end;
 	
+	local _, _, _, _, _, name = GetPlayerInfoByGUID(sourceGUID);
 	name = name or sourceName;
 	
 	local Unit = sourceName;
