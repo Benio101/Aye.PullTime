@@ -294,16 +294,24 @@ Aye.modules.PullTime.events.COMBAT_LOG_EVENT_UNFILTERED = function(...)
 	-- note only first threat situation update
 	if Aye.modules.PullTime.meters.hit ~= nil then return end;
 	
-	local _, event, _, _, sourceName = ...;
 	if not string.match(event, "_DAMAGE$") then return end;
 	
-	local Unit = sourceName;
-	if Unit == nil then
+	if
+			sourceName == nil
+		or	destName == nil
+		or	bit.band(sourceFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~=COMBATLOG_OBJECT_CONTROL_PLAYER
+		or	bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_FRIENDLY) ~=COMBATLOG_OBJECT_REACTION_FRIENDLY
+		or	bit.band(sourceFlags, COMBATLOG_OBJECT_AFFILIATION_OUTSIDER) ==COMBATLOG_OBJECT_AFFILIATION_OUTSIDER
+		or	bit.band(destFlags, COMBATLOG_OBJECT_CONTROL_NPC) ~=COMBATLOG_OBJECT_CONTROL_NPC
+		or	bit.band(destFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~=COMBATLOG_OBJECT_REACTION_HOSTILE
+	then
 		return;
 	end;
 	
-	local name = sourceName;
-	if name == nil then
+	name = name or sourceName;
+	
+	local Unit = sourceName;
+	if Unit == nil then
 		return;
 	end;
 	
@@ -420,6 +428,13 @@ Aye.modules.PullTime.checkReport = function()
 	then
 		activeMeters = activeMeters -1;
 	end;
+	if
+			not Aye.db.global.PullTime.showHitName
+		and	not Aye.db.global.PullTime.showHitSpell
+		and	not Aye.db.global.PullTime.showHitPullTime
+	then
+		activeMeters = activeMeters -1;
+	end;
 	
 	if Aye.modules.PullTime.meters.count >= activeMeters then
 		Aye.libs.Timer.PullTime_report();
@@ -532,7 +547,10 @@ Aye.libs.Timer.PullTime_report = function()
 			
 			if
 					Aye.db.global.PullTime.showTargetPullTime
-				and	not Aye.modules.PullTime.NinjaPull
+				and	(
+						not Aye.modules.PullTime.NinjaPull
+					or	Aye.db.global.PullTime.showNinjaTimes
+				)
 				and Aye.modules.PullTime.meters.target.ms ~= nil
 			then
 				if
@@ -560,7 +578,10 @@ Aye.libs.Timer.PullTime_report = function()
 			
 			if
 					Aye.db.global.PullTime.showAggroPullTime
-				and	not Aye.modules.PullTime.NinjaPull
+				and	(
+						not Aye.modules.PullTime.NinjaPull
+					or	Aye.db.global.PullTime.showNinjaTimes
+				)
 				and Aye.modules.PullTime.meters.aggro.ms ~= nil
 			then
 				if
@@ -603,7 +624,10 @@ Aye.libs.Timer.PullTime_report = function()
 			
 			if
 					Aye.db.global.PullTime.showHitPullTime
-				and	not Aye.modules.PullTime.NinjaPull
+				and	(
+						not Aye.modules.PullTime.NinjaPull
+					or	Aye.db.global.PullTime.showNinjaTimes
+				)
 				and Aye.modules.PullTime.meters.hit.ms ~= nil
 			then
 				if

@@ -17,6 +17,7 @@ Aye.default.global.PullTime = {
 	metersDelayTime = 5,				-- Maximum Delay (in s)
 	showNinjaPull = true,				-- Show Ninja Pulls
 	showNinjaWord = false,				-- Show "Ninja" Pull word
+	showNinjaTimes = false,				-- Show Ninja Pull times
 	GuildGroupDisable = false,			-- Disable in Guild group
 	LFGDisable = false,					-- Disable in LFG group
 	PvPDisable = true,					-- Disable on PvP (arena, battleground)

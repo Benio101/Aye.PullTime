@@ -267,8 +267,13 @@ Aye.options.args.PullTime = {
 					)
 			end,
 		},
+		linebreak36 = {
+			order = 36,
+			type = "description",
+			name = "",
+		},
 		metersDelayTime = {
-			order = 37,
+			order = 38,
 			name = "Maximum Delay (in s)",
 			desc = "Maximum Pull Time Info Delay (in s)",
 			type = "range",
@@ -282,7 +287,7 @@ Aye.options.args.PullTime = {
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 		description38 = {
-			order = 38,
+			order = 39,
 			type = "description",
 			name = "Pull Time information is sent to chat once all chosen meters are filled.\n"
 				.. "|cffe6cc80Maximum Delay|r determined maximum waiting time for all meters. "
@@ -310,6 +315,20 @@ Aye.options.args.PullTime = {
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showNinjaWord end,
 			set = function(_, v) Aye.db.global.PullTime.showNinjaWord = v end,
+			disabled = function() return
+					not Aye.db.global.PullTime.enable
+				or	not Aye.db.global.PullTime.showNinjaPull
+			end,
+		},
+		showNinjaTimes = {
+			order = 46,
+			name = "Show Ninja Pull times",
+			desc = "By default, timers are not shown on Ninja Pulls as there is not planned pull time.\n\n"
+				.. "However, if enabled, times will be shown relative to encounter start time instead."
+			,
+			type = "toggle",
+			get = function() return Aye.db.global.PullTime.showNinjaTimes end,
+			set = function(_, v) Aye.db.global.PullTime.showNinjaTimes = v end,
 			disabled = function() return
 					not Aye.db.global.PullTime.enable
 				or	not Aye.db.global.PullTime.showNinjaPull
