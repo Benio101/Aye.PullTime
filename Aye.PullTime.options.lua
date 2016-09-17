@@ -108,6 +108,9 @@ Aye.options.args.PullTime = {
 						and	not Aye.db.global.PullTime.showTargetPullTime
 						and	not Aye.db.global.PullTime.showAggroName
 						and	not Aye.db.global.PullTime.showAggroPullTime
+						and	not Aye.db.global.PullTime.showHitName
+						and	not Aye.db.global.PullTime.showHitSpell
+						and	not Aye.db.global.PullTime.showHitPullTime
 					)
 			end,
 		},
@@ -125,6 +128,9 @@ Aye.options.args.PullTime = {
 						and	not Aye.db.global.PullTime.showTargetPullTime
 						and	not Aye.db.global.PullTime.showAggroName
 						and	not Aye.db.global.PullTime.showAggroPullTime
+						and	not Aye.db.global.PullTime.showHitName
+						and	not Aye.db.global.PullTime.showHitSpell
+						and	not Aye.db.global.PullTime.showHitPullTime
 					)
 			end,
 		},
@@ -142,6 +148,9 @@ Aye.options.args.PullTime = {
 						and	not Aye.db.global.PullTime.showTargetName
 						and	not Aye.db.global.PullTime.showAggroName
 						and	not Aye.db.global.PullTime.showAggroPullTime
+						and	not Aye.db.global.PullTime.showHitName
+						and	not Aye.db.global.PullTime.showHitSpell
+						and	not Aye.db.global.PullTime.showHitPullTime
 					)
 			end,
 		},
@@ -159,6 +168,9 @@ Aye.options.args.PullTime = {
 						and	not Aye.db.global.PullTime.showTargetName
 						and	not Aye.db.global.PullTime.showTargetPullTime
 						and	not Aye.db.global.PullTime.showAggroPullTime
+						and	not Aye.db.global.PullTime.showHitName
+						and	not Aye.db.global.PullTime.showHitSpell
+						and	not Aye.db.global.PullTime.showHitPullTime
 					)
 			end,
 		},
@@ -176,11 +188,74 @@ Aye.options.args.PullTime = {
 						and	not Aye.db.global.PullTime.showTargetName
 						and	not Aye.db.global.PullTime.showTargetPullTime
 						and	not Aye.db.global.PullTime.showAggroName
+						and	not Aye.db.global.PullTime.showHitName
+						and	not Aye.db.global.PullTime.showHitSpell
+						and	not Aye.db.global.PullTime.showHitPullTime
+					)
+			end,
+		},
+		showHitName = {
+			order = 33,
+			name = "Show First Hit Name",
+			desc = "Show the Name of unit who made first hit since Pull Timer",
+			type = "toggle",
+			get = function() return Aye.db.global.PullTime.showHitName end,
+			set = function(_, v) Aye.db.global.PullTime.showHitName = v end,
+			disabled = function() return
+					not Aye.db.global.PullTime.enable
+				or	(
+							not Aye.db.global.PullTime.showEncounterStartTime
+						and	not Aye.db.global.PullTime.showTargetName
+						and	not Aye.db.global.PullTime.showTargetPullTime
+						and	not Aye.db.global.PullTime.showAggroName
+						and	not Aye.db.global.PullTime.showAggroPullTime
+						and	not Aye.db.global.PullTime.showHitSpell
+						and	not Aye.db.global.PullTime.showHitPullTime
+					)
+			end,
+		},
+		showHitSpell = {
+			order = 34,
+			name = "Show First Hit Spell",
+			desc = "Show the Spell that caused first hit since Pull Timer",
+			type = "toggle",
+			get = function() return Aye.db.global.PullTime.showHitSpell end,
+			set = function(_, v) Aye.db.global.PullTime.showHitSpell = v end,
+			disabled = function() return
+					not Aye.db.global.PullTime.enable
+				or	(
+							not Aye.db.global.PullTime.showEncounterStartTime
+						and	not Aye.db.global.PullTime.showTargetName
+						and	not Aye.db.global.PullTime.showTargetPullTime
+						and	not Aye.db.global.PullTime.showAggroName
+						and	not Aye.db.global.PullTime.showAggroPullTime
+						and	not Aye.db.global.PullTime.showHitName
+						and	not Aye.db.global.PullTime.showHitPullTime
+					)
+			end,
+		},
+		showHitPullTime = {
+			order = 35,
+			name = "Show First Hit Pull Time",
+			desc = "Show the difference beetween planned Pull Time and the first hit since Pull Timer (in ms)",
+			type = "toggle",
+			get = function() return Aye.db.global.PullTime.showHitPullTime end,
+			set = function(_, v) Aye.db.global.PullTime.showHitPullTime = v end,
+			disabled = function() return
+					not Aye.db.global.PullTime.enable
+				or	(
+							not Aye.db.global.PullTime.showEncounterStartTime
+						and	not Aye.db.global.PullTime.showTargetName
+						and	not Aye.db.global.PullTime.showTargetPullTime
+						and	not Aye.db.global.PullTime.showAggroName
+						and	not Aye.db.global.PullTime.showAggroPullTime
+						and	not Aye.db.global.PullTime.showHitName
+						and	not Aye.db.global.PullTime.showHitSpell
 					)
 			end,
 		},
 		metersDelayTime = {
-			order = 33,
+			order = 37,
 			name = "Maximum Delay (in s)",
 			desc = "Maximum Pull Time Info Delay (in s)",
 			type = "range",
@@ -193,8 +268,8 @@ Aye.options.args.PullTime = {
 			set = function(_, v) Aye.db.global.PullTime.metersDelayTime = v end,
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
-		description37 = {
-			order = 34,
+		description38 = {
+			order = 38,
 			type = "description",
 			name = "Pull Time information is sent to chat once all chosen meters are filled.\n"
 				.. "|cffe6cc80Maximum Delay|r determined maximum waiting time for all meters. "

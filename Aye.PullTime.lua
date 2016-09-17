@@ -25,6 +25,7 @@ Aye.modules.PullTime.OnEnable = function()
 		"aggro",		-- UNIT_THREAT_SITUATION_UPDATE
 		"encounter",	-- ENCOUNTER_START
 		"target",		-- UNIT_TARGET
+		"hit",			-- COMBAT_LOG_EVENT_UNFILTERED
 	};
 	
 	-- mark for ninja pulls
@@ -281,6 +282,87 @@ Aye.modules.PullTime.events.UNIT_TARGET = function()
 	end;
 end;
 
+Aye.modules.PullTime.events.COMBAT_LOG_EVENT_UNFILTERED = function(...)
+	if
+			not Aye.db.global.PullTime.enable
+		or	(
+					not Aye.db.global.PullTime.showHitName
+				and	not Aye.db.global.PullTime.showHitPullTime
+			)
+	then return end;
+	
+	-- note only first threat situation update
+	if Aye.modules.PullTime.meters.hit ~= nil then return end;
+	
+	local _, event, _, _, sourceName = ...;
+	if not string.match(event, "_DAMAGE$") then return end;
+	
+	local Unit = sourceName;
+	if Unit == nil then
+		return;
+	end;
+	
+	local name = sourceName;
+	if name == nil then
+		return;
+	end;
+	
+	-- Raid Unit Hit state changed
+	if Aye.modules.PullTime.PlannedPullTime ~= nil then
+		-- Pull countdown (or upto Aye.db.global.PullTime.metersDelayTime seconds after)
+		
+		local player = false;
+		if (
+				UnitInRaid(Unit) ~= nil
+			or	UnitInParty(Unit)
+			or	UnitIsUnit(Unit, "player")
+		) then
+			player = true;
+		end;
+		
+		if not player then
+			local members = max(1, GetNumGroupMembers());
+			for i = 1, members do
+				-- in raid, every player have "raidX" id where id begins from 1 and ends with member number
+				-- in party, there is always "player" and every NEXT members are "partyX" where X begins from 1
+				-- especially, in full party, there are: "player", "party1", "party2", "party3", "party4" and NO "party5"
+				local petID = (UnitInRaid("player") and "raid" ..i or (i ==1 and "" or "party" ..i -1)) .. "pet";
+				if UnitIsUnit(petID, Unit) then
+					local ownerID = UnitInRaid("player") and "raid" ..i or (i ==1 and "player" or "party" ..i -1);
+					local ownerName = UnitName(ownerID);
+					if ownerName then
+						name = name .." (" ..ownerName .."'s pet)";
+					end;
+				end;
+			end;
+		end;
+		
+		local spell = "";
+		if
+				event == "RANGE_SPELL"
+			or	event == "SPELL"
+			or	event == "SPELL_PERIODIC"
+			or	event == "SPELL_BUILDING"
+		then
+			local _, _, _, _, _, _, _, _, _, _, _, spellID = ...;
+			spell = GetSpellLink(spellID) or "";
+		end;
+		
+		Aye.modules.PullTime.meters.hit = {
+			-- pulling unit name
+			name = name,
+			-- pulling spell
+			spell = spell,
+			
+			-- time beetween planned and real pull (in ms)
+			ms = debugprofilestop() - Aye.modules.PullTime.PlannedPullTime,
+		};
+		
+		Aye.modules.PullTime.meters.count = Aye.modules.PullTime.meters.count +1;
+		Aye.modules.PullTime.checkReport();
+	end;
+end;
+
 -- Format given time (in ms) into human friendly format
 --
 -- @param	{uint}		ms	time difference beetween planned and actual pull (in ms)
@@ -493,6 +575,55 @@ Aye.libs.Timer.PullTime_report = function()
 			end;
 			
 			pullTimeMismatch = pullTimeMismatch +abs(Aye.modules.PullTime.meters.aggro.ms);
+			pullTimeMismatch_count = pullTimeMismatch_count +1;
+		end;
+		if Aye.modules.PullTime.meters.hit ~= nil then
+			if
+					Aye.db.global.PullTime.showHitName
+				and	Aye.modules.PullTime.meters.hit.name ~= ""
+			then
+				if message ~= "" then message = message ..", " end;
+				message = message .. " Hit: " ..Aye.modules.PullTime.meters.hit.name;
+			end;
+			
+			if
+					Aye.db.global.PullTime.showHitSpell
+				and	Aye.modules.PullTime.meters.hit.spell ~= ""
+			then
+				if
+						Aye.db.global.PullTime.showHitName
+					and	Aye.modules.PullTime.meters.hit.name ~= ""
+				then
+					message = message .. " by " ..Aye.modules.PullTime.meters.hit.spell;
+				else
+					if message ~= "" then message = message ..", " end;
+					message = message .. " Hit: " ..Aye.modules.PullTime.meters.hit.spell;
+				end;
+			end;
+			
+			if
+					Aye.db.global.PullTime.showHitPullTime
+				and	not Aye.modules.PullTime.NinjaPull
+				and Aye.modules.PullTime.meters.hit.ms ~= nil
+			then
+				if
+						(
+								Aye.db.global.PullTime.showHitName
+							and	Aye.modules.PullTime.meters.hit.name ~= ""
+						)
+					or	(
+								Aye.db.global.PullTime.showHitSpell
+							and	Aye.modules.PullTime.meters.hit.spell ~= ""
+						)
+				then
+					message = message .. " (" ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.hit.ms) ..")";
+				else
+					if message ~= "" then message = message ..", " end;
+					message = message .. " Hit: " ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.hit.ms);
+				end;
+			end;
+			
+			pullTimeMismatch = pullTimeMismatch +abs(Aye.modules.PullTime.meters.hit.ms);
 			pullTimeMismatch_count = pullTimeMismatch_count +1;
 		end;
 		
