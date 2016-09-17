@@ -339,10 +339,10 @@ Aye.modules.PullTime.events.COMBAT_LOG_EVENT_UNFILTERED = function(...)
 		
 		local spell = "";
 		if
-				event == "RANGE_SPELL"
-			or	event == "SPELL"
-			or	event == "SPELL_PERIODIC"
-			or	event == "SPELL_BUILDING"
+				event == "RANGE_SPELL_DAMAGE"
+			or	event == "SPELL_DAMAGE"
+			or	event == "SPELL_PERIODIC_DAMAGE"
+			or	event == "SPELL_BUILDING_DAMAGE"
 		then
 			local _, _, _, _, _, _, _, _, _, _, _, spellID = ...;
 			spell = GetSpellLink(spellID) or "";
