@@ -8,7 +8,6 @@
 
 #utils
 utils/Chat.lua
-utils/EJ.lua
 utils/Player.lua
 
 #files

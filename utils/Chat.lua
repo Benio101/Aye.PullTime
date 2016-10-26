@@ -112,7 +112,10 @@ Aye.utils.Chat.SendChatMessage = Aye.utils.Chat.SendChatMessage or function(msg,
 				return;
 			end;
 			
-			local distance = math.sqrt(UnitDistanceSquared(unitID));
+			-- since 7.1, we can't determine if player can see our /say or /yell that way
+			-- @todo find a new way
+			local distance = 301;
+			--local distance = math.sqrt(UnitDistanceSquared(unitID));
 			
 			if distance <= 300 then
 				yellRecipients = yellRecipients +1;

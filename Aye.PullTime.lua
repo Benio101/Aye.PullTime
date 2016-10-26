@@ -197,7 +197,10 @@ Aye.modules.PullTime.events.ENCOUNTER_START = function()
 	-- Pull countdown (or upto Aye.db.global.PullTime.metersDelayTime seconds after)
 	
 	-- link to current encounter
-	local _, _, _, _, _, _, _, link = Aye.utils.EJ.GetCurrentEncounter();
+	-- since 7.1, we can't get current encounter info this way
+	-- @todo find a new way
+	local _, _, _, _, _, _, _, link = nil;
+	--local _, _, _, _, _, _, _, link = Aye.utils.EJ.GetCurrentEncounter();
 	
 	Aye.modules.PullTime.meters.encounter = {
 		-- time beetween planned and real pull (in ms)
