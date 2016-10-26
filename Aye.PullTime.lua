@@ -725,7 +725,7 @@ Aye.libs.Timer.PullTime_report = function()
 			if IsInGroup() then
 				-- tell other Aye users that we handled event already
 				-- antispam: disable other's notifies for 10s
-				SendAddonMessage("Aye", "PullTime",	Aye.utils.Chat.GetGroupChannel());
+				SendAddonMessage("Aye", "PullTime",	"RAID");
 			end;
 		end;
 	end;
