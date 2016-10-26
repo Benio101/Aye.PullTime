@@ -3,8 +3,8 @@
 ## Depot: Aye
 ## LoadOnDemand: 1
 ## Author: Benio
-## Version: 1.0.2
-## Interface: 70000
+## Version: 1.0.3
+## Interface: 70100
 
 #utils
 utils/Chat.lua

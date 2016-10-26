@@ -13,6 +13,7 @@ Aye.utils.EJ = Aye.utils.EJ or {};
 -- @return	{uint}		encounterID		encounter ID
 -- @return	{uint}		rootSectionID	root section ID
 -- @return	{string}	link			formatted link
+-- @return	{uint}		minDistance		distance to closest encounter
 Aye.utils.EJ.GetCurrentEncounter = Aye.utils.EJ.GetCurrentEncounter or function()
 	local x, y = GetPlayerMapPosition("player"); -- player position
 	local minDistance =nil;
@@ -68,6 +69,7 @@ Aye.utils.EJ.GetCurrentEncounter = Aye.utils.EJ.GetCurrentEncounter or function(
 		closestEncounterDescription,
 		closestEncounterEncounterID,
 		closestEncounterRootSectionID,
-		closestEncounterLink
+		closestEncounterLink,
+		minDistance
 	;
 end
