@@ -722,7 +722,10 @@ Aye.libs.Timer.PullTime_report = function()
 				SendChatMessage(message, Aye.db.global.PullTime.channel);
 			end;
 			
-			if IsInGroup() then
+			if
+					IsInGroup()
+				and	Aye.db.global.PullTime.channel ~= "Print"
+			then
 				-- tell other Aye users that we handled event already
 				-- antispam: disable other's notifies for 10s
 				SendAddonMessage("Aye", "PullTime",	"RAID");
