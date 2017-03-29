@@ -29,6 +29,8 @@ Aye.PullTime support Antispam module, not displaying same information by multipl
 Aye.PullTime have many configurable options, that allows you to show chosen Pull Timers in chosen situations.
 Options allows also to filter chosen instance types, group types, select desired chat channel, set allowed mispull tolerance (in ms), and more…
 
+To access options, open Game Memu → Interface → Addons tab → Aye → Aye.PullTime.
+
 ![](http://benio.me/pub/res/img/wow/addons/Aye.PullTime.options.png)
 
 ## Depot
