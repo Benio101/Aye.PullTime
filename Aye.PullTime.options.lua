@@ -13,12 +13,12 @@ Aye.options.args.PullTime = {
 		description2 = {
 			order = 2,
 			type = "description",
-			name = "Show who pulled the boss with difference beetween planned pull (in ms). "
+			name = "Show who pulled the boss with difference beetween planned pull |cff9d9d9d(in ms)|r. "
 				.. "If difference will be bigger than tolerated, additional " .. GetSpellLink(176781) .. " note will be applied, ex.:\n\n"
 				.. "|c" .. RAID_CLASS_COLORS[select(2, UnitClass("player"))].colorStr .. UnitName("player") .. "|r:"
 				.. " Pull on |cff66bbff|Hjournal:1:1372:16|h[Gorefiend]|h|r (−6ms), Target: Foo (−2ms), Aggro: Bar (+3ms)\n"
 				.. "|c" .. RAID_CLASS_COLORS[select(2, UnitClass("player"))].colorStr .. UnitName("player") .. "|r: " .. GetSpellLink(176781)
-				.. " Pull on |cff66bbff|Hjournal:1:1438:16|h[Archimonde]|h|r (+991s), Target: Foo (Bar's Pet) (+1m 17s)"
+				.. " Pull on |cff66bbff|Hjournal:1:1438:16|h[Archimonde]|h|r (+991s), Target: Foo (Bar's Pet) (+1m 17s)\n"
 			,
 		},
 		enable = {
@@ -65,7 +65,7 @@ Aye.options.args.PullTime = {
 		},
 		missPullTimeTolerance = {
 			order = 13,
-			name = "Misspull Time Tolerance (ms)",
+			name = "Misspull Time Tolerance |cff9d9d9d(in ms)|r",
 			desc = "Time allowed beetween planned pull",
 			type = "range",
 			min = 0,
@@ -94,14 +94,14 @@ Aye.options.args.PullTime = {
 		description22 = {
 			order = 22,
 			type = "description",
-			name = "Configure Pull Time meters (indicators) options. |cffe6cc80Recommendation|r|cff9d9d9d: Enable all meters to gain a full view on Pull Time|r. "
+			name = "Configure Pull Time meters |cff9d9d9d(indicators)|r options. |cffe6cc80Recommendation|r|cff9d9d9d: Enable all meters to gain a full view on Pull Time|r. "
 				.. "In case of multiple meters, |cffe6cc80Misspull Time Tolerance|r option refers to arithmetic average of enabled Pull Time meters.\n"
 			,
 		},
 		showEncounterLink = {
 			order = 24,
-			name = "Show Encounter Link",
-			desc = "Show Encounter Journal Link on Encounter Start",
+			name = "|cffe6cc80Show|r Encounter Link",
+			desc = "|cffe6cc80Show|r Encounter Journal Link on Encounter Start",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showEncounterLink end,
 			set = function(_, v) Aye.db.global.PullTime.showEncounterLink = v end,
@@ -109,8 +109,8 @@ Aye.options.args.PullTime = {
 		},
 		showEncounterStartTime = {
 			order = 25,
-			name = "Show Encounter Start Time",
-			desc = "Show the difference beetween planned Pull Time and an Encounter Start Time (in ms)",
+			name = "|cffe6cc80Show|r Encounter Start Time",
+			desc = "Show the difference beetween planned Pull Time and an Encounter Start Time |cff9d9d9d(in ms)|r",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showEncounterStartTime end,
 			set = function(_, v) Aye.db.global.PullTime.showEncounterStartTime = v end,
@@ -129,8 +129,8 @@ Aye.options.args.PullTime = {
 		},
 		showTargetName = {
 			order = 27,
-			name = "Show Target Name",
-			desc = "Show the Name of Boss Target on first Boss Target Change since Pull Timer",
+			name = "|cffe6cc80Show|r Target Name",
+			desc = "|cffe6cc80Show|r the Name of Boss Target on first Boss Target Change since Pull Timer",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showTargetName end,
 			set = function(_, v) Aye.db.global.PullTime.showTargetName = v end,
@@ -149,8 +149,8 @@ Aye.options.args.PullTime = {
 		},
 		showTargetPullTime = {
 			order = 28,
-			name = "Show Target Pull Time",
-			desc = "Show the difference beetween planned Pull Time and the first Boss Target Change since Pull Timer (in ms)",
+			name = "|cffe6cc80Show|r Target Pull Time",
+			desc = "|cffe6cc80Show|r the difference beetween planned Pull Time and the first Boss Target Change since Pull Timer |cff9d9d9d(in ms)|r",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showTargetPullTime end,
 			set = function(_, v) Aye.db.global.PullTime.showTargetPullTime = v end,
@@ -169,8 +169,8 @@ Aye.options.args.PullTime = {
 		},
 		showAggroName = {
 			order = 30,
-			name = "Show Aggro Name",
-			desc = "Show the Name of Boss Aggroed unit on first Boss Aggro Change since Pull Timer",
+			name = "|cffe6cc80Show|r Aggro Name",
+			desc = "|cffe6cc80Show|r the Name of Boss Aggroed unit on first Boss Aggro Change since Pull Timer",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showAggroName end,
 			set = function(_, v) Aye.db.global.PullTime.showAggroName = v end,
@@ -189,8 +189,8 @@ Aye.options.args.PullTime = {
 		},
 		showAggroPullTime = {
 			order = 31,
-			name = "Show Aggro Pull Time",
-			desc = "Show the difference beetween planned Pull Time and the first Boss Aggro Change since Pull Timer (in ms)",
+			name = "|cffe6cc80Show|r Aggro Pull Time",
+			desc = "|cffe6cc80Show|r the difference beetween planned Pull Time and the first Boss Aggro Change since Pull Timer |cff9d9d9d(in ms)|r",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showAggroPullTime end,
 			set = function(_, v) Aye.db.global.PullTime.showAggroPullTime = v end,
@@ -209,8 +209,8 @@ Aye.options.args.PullTime = {
 		},
 		showHitName = {
 			order = 33,
-			name = "Show First Hit Name",
-			desc = "Show the Name of unit who made first hit since Pull Timer",
+			name = "|cffe6cc80Show|r First Hit Name",
+			desc = "|cffe6cc80Show|r the Name of unit who made first hit since Pull Timer",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showHitName end,
 			set = function(_, v) Aye.db.global.PullTime.showHitName = v end,
@@ -229,8 +229,8 @@ Aye.options.args.PullTime = {
 		},
 		showHitSpell = {
 			order = 34,
-			name = "Show First Hit Spell",
-			desc = "Show the Spell that caused first hit since Pull Timer",
+			name = "|cffe6cc80Show|r First Hit Spell",
+			desc = "|cffe6cc80Show|r the Spell that caused first hit since Pull Timer",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showHitSpell end,
 			set = function(_, v) Aye.db.global.PullTime.showHitSpell = v end,
@@ -249,8 +249,8 @@ Aye.options.args.PullTime = {
 		},
 		showHitPullTime = {
 			order = 35,
-			name = "Show First Hit Pull Time",
-			desc = "Show the difference beetween planned Pull Time and the first hit since Pull Timer (in ms)",
+			name = "|cffe6cc80Show|r First Hit Pull Time",
+			desc = "|cffe6cc80Show|r the difference beetween planned Pull Time and the first hit since Pull Timer |cff9d9d9d(in ms)|r",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showHitPullTime end,
 			set = function(_, v) Aye.db.global.PullTime.showHitPullTime = v end,
@@ -267,15 +267,9 @@ Aye.options.args.PullTime = {
 					)
 			end,
 		},
-		linebreak36 = {
-			order = 36,
-			type = "description",
-			name = "",
-		},
 		metersDelayTime = {
 			order = 38,
-			name = "Maximum Delay (in s)",
-			desc = "Maximum Pull Time Info Delay (in s)",
+			name = "Maximum Delay |cff9d9d9d(in s)|r",
 			type = "range",
 			min = 0,
 			max = 60,
@@ -289,9 +283,9 @@ Aye.options.args.PullTime = {
 		description38 = {
 			order = 39,
 			type = "description",
-			name = "Pull Time information is sent to chat once all chosen meters are filled.\n"
+			name = "\nPull Time information is sent to chat once all chosen meters are filled. "
 				.. "|cffe6cc80Maximum Delay|r determined maximum waiting time for all meters. "
-				.. "If chosen time (in s) will pass, Pull Time information will be sent on chat even if incomplete |cff9d9d9d(not all indicators are available)|r.\n"
+				.. "If chosen time |cff9d9d9d(in s)|r will pass, Pull Time information will be sent on chat even if incomplete |cff9d9d9d(not all indicators are available)|r.\n"
 			,
 		},
 		header41 = {
@@ -301,8 +295,8 @@ Aye.options.args.PullTime = {
 		},
 		showNinjaPull = {
 			order = 43,
-			name = "Show Ninja Pulls",
-			desc = "Show Ninja Pulls (Pulls without Pull Timer), they won't contain Pull Timers.",
+			name = "|cffe6cc80Show|r Ninja Pulls",
+			desc = "|cffe6cc80Show|r Ninja Pulls |cff9d9d9d(Pulls without Pull Timer)|r, they won't contain Pull Timers.",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showNinjaPull end,
 			set = function(_, v) Aye.db.global.PullTime.showNinjaPull = v end,
@@ -310,8 +304,8 @@ Aye.options.args.PullTime = {
 		},
 		showNinjaWord = {
 			order = 44,
-			name = "Show \"Ninja\" Pull word",
-			desc = "Show \"Ninja Pull\" instead of simple \"Pull\" on Ninja Pulls.",
+			name = "|cffe6cc80Show|r |cff9d9d9d\"|r|cffe6cc80Ninja|r|cff9d9d9d\"|r Pull word",
+			desc = "|cffe6cc80Show|r |cff9d9d9d\"|r|cffe6cc80Ninja Pull|r|cff9d9d9d\"|r instead of simple |cff9d9d9d\"|r|cffe6cc80Pull|r|cff9d9d9d\"|r on Ninja Pulls.",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showNinjaWord end,
 			set = function(_, v) Aye.db.global.PullTime.showNinjaWord = v end,
@@ -322,7 +316,7 @@ Aye.options.args.PullTime = {
 		},
 		showNinjaTimes = {
 			order = 46,
-			name = "Show Ninja Pull times",
+			name = "|cffe6cc80Show|r Ninja Pull times",
 			desc = "By default, timers are not shown on Ninja Pulls as there is not planned pull time.\n\n"
 				.. "However, if enabled, times will be shown relative to encounter start time instead."
 			,
@@ -341,8 +335,8 @@ Aye.options.args.PullTime = {
 		},
 		GuildGroupDisable = {
 			order = 53,
-			name = "Disable in Guild group",
-			desc = "Disable Pull Time Info in Guild group",
+			name = "|cffe6cc80Disable|r in Ally Group",
+			desc = "|cffe6cc80Disable|r in Ally Group |cff9d9d9d(at least half of other members are either friends or guildmates)|r",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.GuildGroupDisable end,
 			set = function(_, v) Aye.db.global.PullTime.GuildGroupDisable = v end,
@@ -353,8 +347,7 @@ Aye.options.args.PullTime = {
 		},
 		LFGDisable = {
 			order = 54,
-			name = "Disable in LFG group",
-			desc = "Disable Pull Time Info in LFG group",
+			name = "|cffe6cc80Disable|r in LFG group",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.LFGDisable end,
 			set = function(_, v) Aye.db.global.PullTime.LFGDisable = v end,
@@ -365,8 +358,7 @@ Aye.options.args.PullTime = {
 		},
 		PvPDisable = {
 			order = 56,
-			name = "Disable on PvP",
-			desc = "Disable Pull Time Info on PvP (arena, battleground)",
+			name = "|cffe6cc80Disable|r on PvP",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.PvPDisable end,
 			set = function(_, v) Aye.db.global.PullTime.PvPDisable = v end,
@@ -377,8 +369,7 @@ Aye.options.args.PullTime = {
 		},
 		OutsideInstanceDisable = {
 			order = 57,
-			name = "Disable outside Instance",
-			desc = "Disable Pull Time Info outside Instance",
+			name = "|cffe6cc80Disable|r outside Instance",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.OutsideInstanceDisable end,
 			set = function(_, v) Aye.db.global.PullTime.OutsideInstanceDisable = v end,
@@ -390,17 +381,17 @@ Aye.options.args.PullTime = {
 		header61 = {
 			order = 61,
 			type = "header",
-			name = "Force Enable on Instances",
+			name = "Force Enable",
 		},
 		description62 = {
 			order = 62,
 			type = "description",
-			name = "Force Pull Time Enabled independing of Instance Filter:\n",
+			name = "|cffe6cc80Force Enable|r Pull Time independing of Instance Filter.\n",
 		},
 		GuildGroupForceEnable = {
 			order = 63,
-			name = "Force Enable in Guild group",
-			desc = "Force Enable Pull Time Info in Guild group",
+			name = "|cffe6cc80Force Enable|r in Ally Group",
+			desc = "|cffe6cc80Force Enable|r in Ally Group |cff9d9d9d(at least half of other members are either friends or guildmates)|r",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.GuildGroupForceEnable end,
 			set = function(_, v) Aye.db.global.PullTime.GuildGroupForceEnable = v end,
@@ -411,8 +402,7 @@ Aye.options.args.PullTime = {
 		},
 		LFGForceEnable = {
 			order = 64,
-			name = "Force Enable in LFG group",
-			desc = "Force Enable Pull Time Info in LFG group",
+			name = "|cffe6cc80Force Enable|r in LFG group",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.LFGForceEnable end,
 			set = function(_, v) Aye.db.global.PullTime.LFGForceEnable = v end,
@@ -423,8 +413,7 @@ Aye.options.args.PullTime = {
 		},
 		PvPForceEnable = {
 			order = 66,
-			name = "Force Enable on PvP",
-			desc = "Force Enable Pull Time Info on PvP (arena, battleground)",
+			name = "|cffe6cc80Force Enable|r on PvP",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.PvPForceEnable end,
 			set = function(_, v) Aye.db.global.PullTime.PvPForceEnable = v end,
@@ -435,8 +424,7 @@ Aye.options.args.PullTime = {
 		},
 		OutsideInstanceForceEnable = {
 			order = 67,
-			name = "Force Enable outside Instance",
-			desc = "Force Enable Pull Time Info outside Instance",
+			name = "|cffe6cc80Force Enable|r outside Instance",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.OutsideInstanceForceEnable end,
 			set = function(_, v) Aye.db.global.PullTime.OutsideInstanceForceEnable = v end,
@@ -479,8 +467,8 @@ Aye.options.args.PullTime = {
 		},
 		forcePrintInGuildGroup = {
 			order = 74,
-			name = "Force Print in Guild group",
-			desc = "In Guild group prints message instead of sending it on chat",
+			name = "|cffe6cc80Force Print|r in Ally Group",
+			desc = "In Ally Group |cff9d9d9d(at least half of other members are either friends or guildmates)|r prints message instead of sending it on chat",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.forcePrintInGuildGroup end,
 			set = function(_, v) Aye.db.global.PullTime.forcePrintInGuildGroup = v end,

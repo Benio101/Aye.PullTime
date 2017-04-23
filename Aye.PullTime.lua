@@ -469,7 +469,7 @@ Aye.libs.Timer.PullTime_report = function()
 					(
 							(
 									Aye.db.global.PullTime.GuildGroupForceEnable
-								and	InGuildParty()
+								and	Aye.utils.Player.InAllyGroup()
 							)
 						or	(
 									Aye.db.global.PullTime.LFGForceEnable
@@ -488,7 +488,7 @@ Aye.libs.Timer.PullTime_report = function()
 				or	not (
 							(
 									Aye.db.global.PullTime.GuildGroupDisable
-								and	InGuildParty()
+								and	Aye.utils.Player.InAllyGroup()
 							)
 						or	(
 									Aye.db.global.PullTime.LFGDisable
@@ -708,7 +708,7 @@ Aye.libs.Timer.PullTime_report = function()
 					)
 				or	(
 							Aye.db.global.PullTime.forcePrintInGuildGroup
-						and	InGuildParty()
+						and	Aye.utils.Player.InAllyGroup()
 					)
 			then
 				print(message);
