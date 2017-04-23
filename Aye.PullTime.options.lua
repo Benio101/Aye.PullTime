@@ -488,5 +488,23 @@ Aye.options.args.PullTime = {
 				or	Aye.db.global.PullTime.channel == "Print"
 			end,
 		},
+		reportWithAyePrefix = {
+			order = 77,
+			name = "Add inline |cff9d9d9d\"[|r|cffe6cc80Aye|r|cff9d9d9d] \"|r prefix before message",
+			type = "toggle",
+			width = "full",
+			get = function() return Aye.db.global.PullTime.reportWithAyePrefix end,
+			set = function(_, v) Aye.db.global.PullTime.reportWithAyePrefix = v end,
+			disabled = function() return not Aye.db.global.PullTime.enable end,
+		},
+		reportWithWarningPrefix = {
+			order = 78,
+			name = "Add inline |cff9d9d9d\"" ..GetSpellLink(176781) .." \"|r prefix before message",
+			type = "toggle",
+			width = "full",
+			get = function() return Aye.db.global.PullTime.reportWithWarningPrefix end,
+			set = function(_, v) Aye.db.global.PullTime.reportWithWarningPrefix = v end,
+			disabled = function() return not Aye.db.global.PullTime.enable end,
+		},
 	},
 };

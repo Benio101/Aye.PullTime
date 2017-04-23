@@ -687,16 +687,28 @@ Aye.libs.Timer.PullTime_report = function()
 			-- add message header
 			message = "Pull" ..message;
 			
+			-- @todo: rewrite it
+			local bPrint = false;
+			
+			-- prefix of message
+			local prefix = "";
+			if Aye.db.global.PullTime.reportWithAyePrefix then
+				prefix = prefix ..(bPrint and "|cff9d9d9d[|r|cffe6cc80Aye|r|cff9d9d9d]|r " or "[Aye] ");
+			end;
+			
 			if pullTimeMismatch >Aye.db.global.PullTime.missPullTimeTolerance then
 				-- misstime tolerance time exceeded, display warning
-				message = GetSpellLink(176781) .." " ..message;
+				if Aye.db.global.PullTime.reportWithWarningPrefix then
+					-- "WARNING!" spell
+					prefix = prefix ..GetSpellLink(176781) .." ";
+				end;
 			elseif Aye.db.global.PullTime.showOnlyMispulled then
 				-- pull time in misstime tolerance time, no warn
 				return;
 			end;
 			
-			-- add message header
-			message = "[Aye] " ..message;
+			-- add message prefix
+			message = prefix ..message;
 			
 			-- display message on chosen channel
 			if

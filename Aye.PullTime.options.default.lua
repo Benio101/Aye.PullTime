@@ -29,4 +29,6 @@ Aye.default.global.PullTime = {
 	ForceDisableIfMythicBenched = true,	-- Force Disable if Mythic Benched
 	channel = "Raid",					-- The chat channel where message will be sent
 	forcePrintInGuildGroup = false,		-- In Guild group prints message instead of sending it on chat
+	reportWithAyePrefix = false,		-- Add inline "[Aye] " prefix before message
+	reportWithWarningPrefix = false,	-- Add inline "[WARNING!] " prefix before message
 };
