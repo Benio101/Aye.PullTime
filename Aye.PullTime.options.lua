@@ -441,7 +441,7 @@ Aye.options.args.PullTime = {
 			type = "toggle",
 			width = "full",
 			get = function() return Aye.db.global.PullTime.ForceDisableIfMythicBenched end,
-			set = function(_, v) Aye.db.global.PullTime.ForceDisableIfMythicBenched = v end
+			set = function(_, v) Aye.db.global.PullTime.ForceDisableIfMythicBenched = v end,
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 		header71 = {
