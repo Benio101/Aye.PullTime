@@ -3,7 +3,7 @@ if not Aye.addModule("Aye.PullTime") then return end;
 
 Aye.modules.PullTime.OnEnable = function()
 	-- start profiling (used to get ms precision)
-	if debugprofilestop() == nil then
+	if not debugprofilestop() then
 		debugprofilestart();
 	end;
 	
@@ -39,14 +39,15 @@ end;
 
 Aye.modules.PullTime.events.CHAT_MSG_ADDON = function(...)
 	if not Aye.db.global.PullTime.enable then return end;
+	
 	local prefix, message, _, sender = ...;
+	sender = sender:match("^([^%-]+)-") or sender;
 	
 	-- Aye Warnings broadcast handle
 	if
 			prefix == "Aye"
+		and	message
 		and	message == "PullTime"
-		and not UnitIsUnit(sender, "player")
-		and not Aye.modules.PullTime.disableNotify
 	then
 		-- antispam: disable notifies for 10s
 		Aye.modules.PullTime.disableNotify = true;
@@ -56,14 +57,16 @@ Aye.modules.PullTime.events.CHAT_MSG_ADDON = function(...)
 	-- DBM Pull Time broadcast handle
 	if
 			prefix == "D4"
-		and	message ~= nil
+		and	message
+		and sender
 		and	(
-					UnitIsGroupLeader(sender)
-				or	UnitIsGroupAssistant(sender)
+					UnitIsGroupLeader(sender, IsInInstance() and LE_PARTY_CATEGORY_INSTANCE or LE_PARTY_CATEGORY_HOME)
+				or	UnitIsGroupAssistant(sender, IsInInstance() and LE_PARTY_CATEGORY_INSTANCE or LE_PARTY_CATEGORY_HOME)
+				or	UnitIsUnit(sender, "player")
 			)
 	then
 		local seconds = message:match("^PT\t(%d+)");
-		if seconds ~= nil then
+		if seconds then
 			seconds = tonumber(seconds);
 			if seconds ==0 then
 				-- DBM Pull cancelled
