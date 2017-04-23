@@ -451,6 +451,12 @@ end;
 -- @noparam
 -- @noreturn
 Aye.libs.Timer.PullTime_report = function()
+	-- Force Disable if Mythic Benched
+	if
+			Aye.db.global.PullTime.ForceDisableIfMythicBenched
+		and	Aye.utils.Player.IsMythicBenched()
+	then return end;
+	
 	if
 			Aye.db.global.PullTime.enable
 			

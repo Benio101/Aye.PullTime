@@ -101,7 +101,6 @@ Aye.options.args.PullTime = {
 		showEncounterLink = {
 			order = 24,
 			name = "|cffe6cc80Show|r Encounter Link",
-			desc = "|cffe6cc80Show|r Encounter Journal Link on Encounter Start",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.showEncounterLink end,
 			set = function(_, v) Aye.db.global.PullTime.showEncounterLink = v end,
@@ -295,9 +294,9 @@ Aye.options.args.PullTime = {
 		},
 		showNinjaPull = {
 			order = 43,
-			name = "|cffe6cc80Show|r Ninja Pulls",
-			desc = "|cffe6cc80Show|r Ninja Pulls |cff9d9d9d(Pulls without Pull Timer)|r, they won't contain Pull Timers.",
+			name = "|cffe6cc80Show|r Ninja Pulls |cff9d9d9d(Pulls without Pull Timer that won't contain Pull Timers)",
 			type = "toggle",
+			width = "full",
 			get = function() return Aye.db.global.PullTime.showNinjaPull end,
 			set = function(_, v) Aye.db.global.PullTime.showNinjaPull = v end,
 			disabled = function() return not Aye.db.global.PullTime.enable end,
@@ -432,6 +431,18 @@ Aye.options.args.PullTime = {
 					not Aye.db.global.PullTime.enable
 				or	Aye.db.global.PullTime.OutsideInstanceDisable
 			end,
+		},
+		ForceDisableIfMythicBenched = {
+			order = 69,
+			name = "|cffe6cc80Force Disable|r if Mythic Benched |cff9d9d9d(in Ally Group outside party #1–4)|r",
+			desc = "|cffe6cc80Force Disable|r in Ally Group |cff9d9d9d(at least half of other members are either friends or guildmates)|r on Mythic difficulty if outside party #1–4.\n\n"
+				.. "|cffe6cc80Force Disable|r|cff9d9d9d is most important and overwrites |cffe6cc80Force Enable|r|cff9d9d9d.|r"
+			,
+			type = "toggle",
+			width = "full",
+			get = function() return Aye.db.global.PullTime.ForceDisableIfMythicBenched end,
+			set = function(_, v) Aye.db.global.PullTime.ForceDisableIfMythicBenched = v end
+			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 		header71 = {
 			order = 71,

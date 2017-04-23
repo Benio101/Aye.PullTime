@@ -26,6 +26,7 @@ Aye.default.global.PullTime = {
 	LFGForceEnable = false,				-- Force Enable in LFG group
 	PvPForceEnable = false,				-- Force Enable on PvP (arena, battleground)
 	OutsideInstanceForceEnable = false,	-- Force Enable outside Instance
+	ForceDisableIfMythicBenched = true,	-- Force Disable if Mythic Benched
 	channel = "Raid",					-- The chat channel where message will be sent
 	forcePrintInGuildGroup = false,		-- In Guild group prints message instead of sending it on chat
 };
