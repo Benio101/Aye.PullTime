@@ -1,4 +1,5 @@
 local Aye = Aye;
+if not LibStub:NewLibrary("Aye.utils.Chat", 1) then return end;
 Aye.utils.Chat = Aye.utils.Chat or {};
 
 -- Get proper group channel
@@ -9,7 +10,7 @@ Aye.utils.Chat = Aye.utils.Chat or {};
 -- @example
 --| SendChatMessage("Hey, group!",		Aye.utils.Chat.GetGroupChannel());		-- Say welcome to your group
 --| SendChatMessage("Warning, group!",	Aye.utils.Chat.GetGroupChannel(true));	-- Warn your group, use Raid Warning if possible
-Aye.utils.Chat.GetGroupChannel = Aye.utils.Chat.GetGroupChannel or function(rw)
+Aye.utils.Chat.GetGroupChannel = function(rw)
 	rw = rw ~= nil and rw or false;
 	
 	-- Raid Warning (only if rw is set)
@@ -62,7 +63,7 @@ end;
 --| 
 --| Aye.utils.Chat.SendChatMessage("Wipe!", nil, 3);
 --| -- message will be sent on "raid_warning" channel, or on "raid" channel if sender cannot Raid Warning
-Aye.utils.Chat.SendChatMessage = Aye.utils.Chat.SendChatMessage or function(msg, significance, sufficiency)
+Aye.utils.Chat.SendChatMessage = function(msg, significance, sufficiency)
 	significance = significance ~= nil and significance or 0;
 	sufficiency = sufficiency ~= nil and sufficiency or -1;
 	
