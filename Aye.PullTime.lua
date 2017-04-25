@@ -153,7 +153,7 @@ Aye.modules.PullTime.events.UNIT_THREAT_SITUATION_UPDATE = function(Unit)
 	end;
 end;
 
-Aye.modules.PullTime.events.ENCOUNTER_START = function()
+Aye.modules.PullTime.events.ENCOUNTER_START = function(_, encounterName)
 	if
 			not Aye.db.global.PullTime.enable
 		or	(
@@ -184,15 +184,38 @@ Aye.modules.PullTime.events.ENCOUNTER_START = function()
 	-- Pull countdown (or upto Aye.db.global.PullTime.metersDelayTime seconds after)
 	
 	-- link to current encounter
-	-- since 7.1, we can't get current encounter info this way
-	-- @todo find a new way
-	local _, _, _, _, _, _, _, link = nil;
-	--local _, _, _, _, _, _, _, link = Aye.utils.EJ.GetCurrentEncounter();
+	local link = encounterName;
+	
+	local i = 1;
+	while true do
+		local _, _, _, EJ_name, _, _, _, EJ_link = EJ_GetMapEncounter(i);
+		
+		if encounterName == EJ_name then
+			link = EJ_link;
+			break;
+		end;
+		
+		if not EJ_name then
+			break;
+		end;
+		
+		i =i +1;
+	end;
+	
+	local instanceLink = "";
+	local EJ_instanceID = EJ_GetCurrentInstance();
+	if EJ_instanceID then
+		local _, _, _, _, _, _, _, EJ_instanceLink = EJ_GetInstanceInfo();
+		if EJ_instanceLink then
+			instanceLink = EJ_instanceLink;
+		end;
+	end;
 	
 	Aye.modules.PullTime.meters.encounter = {
 		-- time beetween planned and real pull (in ms)
 		ms = debugprofilestop() - Aye.modules.PullTime.PlannedPullTime,
 		link = link or "",
+		instance = instanceLink or "",
 	};
 	
 	Aye.modules.PullTime.meters.count = Aye.modules.PullTime.meters.count +1;
@@ -531,6 +554,12 @@ Aye.modules.PullTime.sendMessage = function()
 			message = message .." on " ..Aye.modules.PullTime.meters.encounter.link;
 		end;
 		
+		if
+				Aye.db.global.PullTime.showInstanceLink
+			and	Aye.modules.PullTime.meters.encounter.instance ~= ""
+		then
+			message = message .." in " ..Aye.modules.PullTime.meters.encounter.instance;
+		end;
 		
 		if
 				Aye.db.global.PullTime.showEncounterStartTime

@@ -7,6 +7,7 @@ Aye.default.global.PullTime = {
 	showOnlyMispulled = false,			-- Don't info if not mispulled
 	showEncounterLink = true,			-- Show Encounter Link
 	showEncounterStartTime = true,		-- Show Encounter Start Time
+	showInstanceLink = false,			-- Show Instance Link
 	showTargetName = true,				-- Show Target Name
 	showTargetPullTime = true,			-- Show Target Pull Time
 	showAggroName = true,				-- Show Aggro Name

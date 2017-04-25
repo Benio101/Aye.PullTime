@@ -126,6 +126,14 @@ Aye.options.args.PullTime = {
 					)
 			end,
 		},
+		showInstanceLink = {
+			order = 26,
+			name = "|cffe6cc80Show|r Instance Link",
+			type = "toggle",
+			get = function() return Aye.db.global.PullTime.showInstanceLink end,
+			set = function(_, v) Aye.db.global.PullTime.showInstanceLink = v end,
+			disabled = function() return not Aye.db.global.PullTime.enable end,
+		},
 		showTargetName = {
 			order = 27,
 			name = "|cffe6cc80Show|r Target Name",
