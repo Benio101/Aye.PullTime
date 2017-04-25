@@ -1,5 +1,5 @@
 local Aye = Aye;
-if not LibStub:NewLibrary("Aye.utils.Player", 2) then return end;
+if not LibStub:NewLibrary("Aye.utils.Player", 3) then return end;
 Aye.utils.Player = Aye.utils.Player or {};
 
 -- @noparam
@@ -58,7 +58,7 @@ end;
 -- @return {bool} InAllyGroup if player is in ally group
 -- @note Ally group means that at least half of players are either friends or guildmates
 Aye.utils.Player.InAllyGroup = function()
-	return (Aye.utils.Player.GetGroupAllies() < max(1, GetNumGroupMembers()) /2);
+	return (Aye.utils.Player.GetGroupAllies() >= max(1, GetNumGroupMembers()) /2);
 end;
 
 -- @noparam
