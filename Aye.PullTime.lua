@@ -41,7 +41,7 @@ Aye.modules.PullTime.events.CHAT_MSG_ADDON = function(...)
 	local prefix, message, _, sender = ...;
 	sender = sender:match("^([^%-]+)-") or sender;
 	
-	-- Aye Warnings broadcast handle
+	-- Aye broadcast handle
 	if
 			prefix == "Aye"
 		and	message
@@ -716,11 +716,11 @@ Aye.modules.PullTime.sendMessage = function()
 	
 	-- if message should be printed instead of sent
 	local bPrint = (
-			Aye.db.global.Warnings.channel == "Print"
+			Aye.db.global.PullTime.channel == "Print"
 		or	(
 					(
-							Aye.db.global.Warnings.channel == "RW"
-						or	Aye.db.global.Warnings.channel == "Raid"
+							Aye.db.global.PullTime.channel == "RW"
+						or	Aye.db.global.PullTime.channel == "Raid"
 					)
 				and	not IsInGroup()
 			)
@@ -732,7 +732,7 @@ Aye.modules.PullTime.sendMessage = function()
 				and	not IsInGuild()
 			)
 		or	(
-					Aye.db.global.Warnings.forcePrintInGuildGroup
+					Aye.db.global.PullTime.forcePrintInGuildGroup
 				and	Aye.utils.Player.InAllyGroup()
 			)
 	);
