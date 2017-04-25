@@ -266,6 +266,19 @@ Aye.options.args.PullTime = {
 					)
 			end,
 		},
+		header36 = {
+			order = 36,
+			type = "header",
+			name = "Delay options",
+		},
+		enableDelay = {
+			order = 37,
+			name = "|cffe6cc80Enable|r Delaying Info",
+			type = "toggle",
+			get = function() return Aye.db.global.PullTime.enableDelay end,
+			set = function(_, v) Aye.db.global.PullTime.enableDelay = v end,
+			disabled = function() return not Aye.db.global.PullTime.enable end,
+		},
 		metersDelayTime = {
 			order = 38,
 			name = "Maximum Delay |cff9d9d9d(in s)|r",
@@ -277,14 +290,19 @@ Aye.options.args.PullTime = {
 			bigStep = 1,
 			get = function() return Aye.db.global.PullTime.metersDelayTime end,
 			set = function(_, v) Aye.db.global.PullTime.metersDelayTime = v end,
-			disabled = function() return not Aye.db.global.PullTime.enable end,
+			disabled = function() return
+					not Aye.db.global.PullTime.enable
+				or	not Aye.db.global.PullTime.enableDelay
+			end,
 		},
-		description38 = {
+		description39 = {
 			order = 39,
 			type = "description",
 			name = "\nPull Time information is sent to chat once all chosen meters are filled. "
 				.. "|cffe6cc80Maximum Delay|r determined maximum waiting time for all meters. "
-				.. "If chosen time |cff9d9d9d(in s)|r will pass, Pull Time information will be sent on chat even if incomplete |cff9d9d9d(not all indicators are available)|r.\n"
+				.. "If chosen time |cff9d9d9d(in s)|r will pass, Pull Time information will be sent on chat even if incomplete |cff9d9d9d(not all indicators are available)|r.\n\n"
+				.. "|cff9d9d9dIf Showing Delay is disabled, Pull Time information can eventually never show, or show with very low chance of reporting correct units and times.|r "
+				.. "|cffe6cc80Recommendation|r|cff9d9d9d: keep this option enabled at all time, eventually adjusting |cffe6cc80Maximum Delay|r time.|r\n"
 			,
 		},
 		header41 = {
@@ -432,8 +450,18 @@ Aye.options.args.PullTime = {
 				or	Aye.db.global.PullTime.OutsideInstanceDisable
 			end,
 		},
+		header91 = {
+			order = 91,
+			type = "header",
+			name = "Force Disable",
+		},
+		description92 = {
+			order = 92,
+			type = "description",
+			name = "|cffe6cc80Force Disable|r is most important and overwrites even |cffe6cc80Force Enable|r.\n",
+		},
 		ForceDisableIfMythicBenched = {
-			order = 69,
+			order = 93,
 			name = "|cffe6cc80Force Disable|r if Mythic Benched |cff9d9d9d(in Ally Group outside party #1–4)|r",
 			desc = "|cffe6cc80Force Disable|r in Ally Group |cff9d9d9d(at least half of other members are either friends or guildmates)|r on Mythic difficulty if outside party #1–4.\n\n"
 				.. "|cffe6cc80Force Disable|r|cff9d9d9d is most important and overwrites |cffe6cc80Force Enable|r|cff9d9d9d.|r"
@@ -444,13 +472,13 @@ Aye.options.args.PullTime = {
 			set = function(_, v) Aye.db.global.PullTime.ForceDisableIfMythicBenched = v end,
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
-		header71 = {
-			order = 71,
+		header111 = {
+			order = 111,
 			type = "header",
 			name = "Chat Channel",
 		},
-		description72 = {
-			order = 72,
+		description112 = {
+			order = 112,
 			type = "description",
 			name = "\"|cffe6cc80Raid|r\" means \"|cfff3e6c0Instance|r\" in LFR, or \"|cfff3e6c0Party|r\" if player is not in raid."
 				.. "\n\"|cffe6cc80Raid Warning|r\" channel behaves like \"|cffe6cc80Raid|r\" if player cannot Raid Warning."
@@ -458,7 +486,7 @@ Aye.options.args.PullTime = {
 			,
 		},
 		channel = {
-			order = 73,
+			order = 113,
 			name = "Chat Channel",
 			desc = "The chat channel where message will be sent",
 			type = "select",
@@ -477,7 +505,7 @@ Aye.options.args.PullTime = {
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 		forcePrintInGuildGroup = {
-			order = 74,
+			order = 114,
 			name = "|cffe6cc80Force Print|r in Ally Group",
 			desc = "In Ally Group |cff9d9d9d(at least half of other members are either friends or guildmates)|r prints message instead of sending it on chat",
 			type = "toggle",
@@ -489,7 +517,7 @@ Aye.options.args.PullTime = {
 			end,
 		},
 		reportWithAyePrefix = {
-			order = 77,
+			order = 117,
 			name = "Add inline |cff9d9d9d\"[|r|cffe6cc80Aye|r|cff9d9d9d] \"|r prefix before message",
 			type = "toggle",
 			width = "full",
@@ -498,13 +526,67 @@ Aye.options.args.PullTime = {
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 		reportWithWarningPrefix = {
-			order = 78,
+			order = 118,
 			name = "Add inline |cff9d9d9d\"" ..GetSpellLink(176781) .." \"|r prefix before message",
 			type = "toggle",
 			width = "full",
 			get = function() return Aye.db.global.PullTime.reportWithWarningPrefix end,
 			set = function(_, v) Aye.db.global.PullTime.reportWithWarningPrefix = v end,
 			disabled = function() return not Aye.db.global.PullTime.enable end,
+		},
+		header151 = {
+			order = 151,
+			type = "header",
+			name = "Antispam",
+		},
+		description152 = {
+			order = 152,
+			type = "description",
+			name = "Prevent sending pull time information multiple times within small amount of time.\n\n"
+				.. "Once all pull times are fully determined, it is required to pass some time before reporting it, "
+				.. "waiting for eventual addon messages from other members saying that they sent pull timer information already, so we will refrain from repeating same pull time information.\n\n"
+				.. "|cffe6cc80Pull Time Info|r value should be slightly higher than the highest ping of any group member on any time during reports |cff9d9d9d(if unsure, |cffe6cc801000|rms is usually an optimal value)|r.\n"
+			,
+		},
+		antispamCooldown = {
+			order = 154,
+			name = "Antispam Cooldown |cff9d9d9d(in s)|r",
+			desc = "Minimum amount of time |cff9d9d9d(in seconds)|r that must pass before sending pull time information again.",
+			type = "range",
+			min = 0,
+			max = 60,
+			softMin = 5,
+			softMax = 30,
+			bigStep = 5,
+			get = function() return Aye.db.global.Warnings.antispamCooldown end,
+			set = function(_, v) Aye.db.global.Warnings.antispamCooldown = v end,
+			disabled = function() return
+					not Aye.db.global.Warnings.enable
+				or	(
+							not Aye.db.global.Warnings.enableReadyCheck
+						and	not Aye.db.global.Warnings.enablePull
+					)
+			end,
+		},
+		antispamReportDelay = {
+			order = 155,
+			name = "Pull Time Info Delay |cff9d9d9d(in ms)|r",
+			desc = "Pull Time Info Delay by specified amount of time |cff9d9d9d(in milliseconds)|r.\n\n",
+			type = "range",
+			min = 0,
+			max = 5000,
+			softMin = 0,
+			softMax = 3000,
+			bigStep = 200,
+			get = function() return Aye.db.global.Warnings.antispamReportDelay end,
+			set = function(_, v) Aye.db.global.Warnings.antispamReportDelay = v end,
+			disabled = function() return
+					not Aye.db.global.Warnings.enable
+				or	(
+							not Aye.db.global.Warnings.enableReadyCheck
+						and	not Aye.db.global.Warnings.enablePull
+					)
+			end,
 		},
 	},
 };

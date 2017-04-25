@@ -14,6 +14,7 @@ Aye.default.global.PullTime = {
 	showHitName = true,					-- Show Hit Name
 	showHitSpell = true,				-- Show Hit Spell
 	showHitPullTime = true,				-- Show Hit Pull Time
+	enableDelay = true,					-- Enable Delay
 	metersDelayTime = 5,				-- Maximum Delay (in s)
 	showNinjaPull = true,				-- Show Ninja Pulls
 	showNinjaWord = false,				-- Show "Ninja" Pull word
@@ -31,4 +32,6 @@ Aye.default.global.PullTime = {
 	forcePrintInGuildGroup = false,		-- In Guild group prints message instead of sending it on chat
 	reportWithAyePrefix = false,		-- Add inline "[Aye] " prefix before message
 	reportWithWarningPrefix = false,	-- Add inline "[WARNING!] " prefix before message
+	antispamCooldown = 10,				-- Antispam Cooldown (in s)
+	antispamReportDelay = 1000,			-- Ansitpam Report Delay (in ms)
 };

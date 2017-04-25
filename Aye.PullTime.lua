@@ -31,10 +31,8 @@ Aye.modules.PullTime.OnEnable = function()
 	-- mark for ninja pulls
 	Aye.modules.PullTime.NinjaPull = false;
 	
-	-- list of subjects that won't be checked
-	-- considering others made it already
-	-- aka anti chat spam system
-	Aye.modules.PullTime.disableNotify = false;
+	-- anti chat spam system
+	Aye.modules.PullTime.antispam = {cooldown = false};
 end;
 
 Aye.modules.PullTime.events.CHAT_MSG_ADDON = function(...)
@@ -49,9 +47,11 @@ Aye.modules.PullTime.events.CHAT_MSG_ADDON = function(...)
 		and	message
 		and	message == "PullTime"
 	then
-		-- antispam: disable notifies for 10s
-		Aye.modules.PullTime.disableNotify = true;
-		Aye.modules.PullTime.CleardisableNotifyTimerFunction = Aye.libs.Timer:ScheduleTimer("PullTime_enableNotify", 10);
+		Aye.modules.PullTime.antispam.cooldown = true;
+		if Aye.modules.PullTime.antispam.timer then Aye.modules.PullTime.antispam.timer:Cancel() end;
+		Aye.modules.PullTime.antispam.timer = C_Timer.NewTimer(Aye.db.global.PullTime.antispamCooldown, function()
+			Aye.modules.PullTime.antispam.cooldown = false;
+		end);
 	end;
 	
 	-- DBM Pull Time broadcast handle
@@ -70,7 +70,9 @@ Aye.modules.PullTime.events.CHAT_MSG_ADDON = function(...)
 			seconds = tonumber(seconds);
 			if seconds ==0 then
 				-- DBM Pull cancelled
-				Aye.libs.Timer.PullTime_clear();
+				Aye.modules.PullTime.PlannedPullTime = nil;
+				Aye.modules.PullTime.meters = {count = 0};
+				Aye.modules.PullTime.NinjaPull = false;
 			elseif seconds >0 then
 				-- DBM Pull
 				Aye.modules.PullTime.NinjaPull = false;
@@ -80,34 +82,16 @@ Aye.modules.PullTime.events.CHAT_MSG_ADDON = function(...)
 				
 				-- set Aye.modules.PullTime.PlannedPullTime back to nil
 				-- watcher expires Aye.db.global.PullTime.metersDelayTime seconds after planned pull
-				Aye.modules.PullTime.ClearTimerFunction = Aye.libs.Timer:ScheduleTimer("PullTime_report", seconds +Aye.db.global.PullTime.metersDelayTime);
+				if Aye.modules.PullTime.timer then Aye.modules.PullTime.timer:Cancel() end;
+				if enableDelay then
+					Aye.modules.PullTime.timer = C_Timer.NewTimer(seconds +Aye.db.global.PullTime.metersDelayTime +Aye.db.global.PullTime.antispamReportDelay /1000, Aye.modules.PullTime.report);
+				end;
 			end;
 		end;
 	end;
 end;
 
--- Kill DBM Pull countdown watcher
--- Triggered either Aye.db.global.PullTime.metersDelayTime seconds after planned pull or when all Pull Time meters are filled
---
--- @noparam
--- @noreturn
-Aye.libs.Timer.PullTime_clear = function()
-	Aye.libs.Timer:CancelTimer(Aye.modules.PullTime.ClearTimerFunction);
-	Aye.modules.PullTime.PlannedPullTime = nil;
-	Aye.modules.PullTime.meters = {count = 0};
-	Aye.modules.PullTime.NinjaPull = false;
-end;
-
--- reenable notifies (antispam time expired)
---
--- @noparam
--- @noreturn
-Aye.libs.Timer.PullTime_enableNotify = function()
-	Aye.libs.Timer:CancelTimer(Aye.modules.PullTime.CleardisableNotifyTimerFunction);
-	Aye.modules.PullTime.disableNotify = false;
-end;
-
-Aye.modules.PullTime.events.UNIT_THREAT_SITUATION_UPDATE = function(...)
+Aye.modules.PullTime.events.UNIT_THREAT_SITUATION_UPDATE = function(Unit)
 	if
 			not Aye.db.global.PullTime.enable
 		or	(
@@ -117,25 +101,22 @@ Aye.modules.PullTime.events.UNIT_THREAT_SITUATION_UPDATE = function(...)
 	then return end;
 	
 	-- note only first threat situation update
-	if Aye.modules.PullTime.meters.aggro ~= nil then return end;
+	if Aye.modules.PullTime.meters.aggro then return end;
 	
-	local Unit = ...;
-	if Unit == nil then
-		return;
-	end;
+	-- check if Unit is known
+	if not Unit then return end;
 	
+	-- check if Unit's name is known
 	local name = UnitName(Unit);
-	if name == nil then
-		return;
-	end;
+	if not name then return end;
 	
 	-- Raid Unit Aggro state changed
-	if Aye.modules.PullTime.PlannedPullTime ~= nil then
+	if Aye.modules.PullTime.PlannedPullTime then
 		-- Pull countdown (or upto Aye.db.global.PullTime.metersDelayTime seconds after)
 		
 		local player = false;
 		if (
-				UnitInRaid(Unit) ~= nil
+				UnitInRaid(Unit)
 			or	UnitInParty(Unit)
 			or	UnitIsUnit(Unit, "player")
 		) then
@@ -180,21 +161,24 @@ Aye.modules.PullTime.events.ENCOUNTER_START = function()
 				and	not Aye.db.global.PullTime.showEncounterStartTime
 				
 				-- ENCOUNTER_START catches Ninja Pulls, don't disable it
-				and Aye.modules.PullTime.PlannedPullTime ~= nil
+				and Aye.modules.PullTime.PlannedPullTime
 			)
 	then return end;
 	
 	-- note only first encounter start occurence
-	if Aye.modules.PullTime.meters.encounter ~= nil then return end;
+	if Aye.modules.PullTime.meters.encounter then return end;
 	
 	-- Ninja pull
-	if Aye.modules.PullTime.PlannedPullTime == nil then
+	if not Aye.modules.PullTime.PlannedPullTime then
 		Aye.modules.PullTime.NinjaPull = true;
 		Aye.modules.PullTime.PlannedPullTime = debugprofilestop();
 		
 		-- set Aye.modules.PullTime.PlannedPullTime back to nil
 		-- watcher expires Aye.db.global.PullTime.metersDelayTime seconds after ninja pull
-		Aye.modules.PullTime.ClearTimerFunction = Aye.libs.Timer:ScheduleTimer("PullTime_report", Aye.db.global.PullTime.metersDelayTime);
+		if Aye.modules.PullTime.timer then Aye.modules.PullTime.timer:Cancel() end;
+		if enableDelay then
+			Aye.modules.PullTime.timer = C_Timer.NewTimer(Aye.db.global.PullTime.metersDelayTime +Aye.db.global.PullTime.antispamReportDelay /1000, Aye.modules.PullTime.report);
+		end;
 	end;
 	
 	-- Pull countdown (or upto Aye.db.global.PullTime.metersDelayTime seconds after)
@@ -221,8 +205,11 @@ Aye.modules.PullTime.events.ENCOUNTER_END = function()
 	-- 10s should be far enough to prevent it and few enough not to occur once pull (respawn time, pull time)
 	
 	-- antispam: disable notifies for 10s
-	Aye.modules.PullTime.disableNotify = true;
-	Aye.modules.PullTime.CleardisableNotifyTimerFunction = Aye.libs.Timer:ScheduleTimer("PullTime_enableNotify", 10);
+	Aye.modules.PullTime.antispam.cooldown = true;
+	if Aye.modules.PullTime.antispam.timer then Aye.modules.PullTime.antispam.timer:Cancel() end;
+	Aye.modules.PullTime.antispam.timer = C_Timer.NewTimer(Aye.db.global.PullTime.antispamCooldown, function()
+		Aye.modules.PullTime.antispam.cooldown = false;
+	end);
 end;
 
 Aye.modules.PullTime.events.UNIT_TARGET = function()
@@ -235,20 +222,20 @@ Aye.modules.PullTime.events.UNIT_TARGET = function()
 	then return end;
 	
 	-- note only first target on boss unit targeting
-	if Aye.modules.PullTime.meters.target ~= nil then return end;
+	if Aye.modules.PullTime.meters.target then return end;
 	
 	for i =1, 5 do
 		local Unit = "boss" ..i .."target";
-		if Unit ~= nil then
+		if Unit then
 			local name = UnitName(Unit);
-			if name ~= nil then
+			if name then
 				-- One of bosses have a valid target
-				if Aye.modules.PullTime.PlannedPullTime ~= nil then
+				if Aye.modules.PullTime.PlannedPullTime then
 					-- Pull countdown (or upto Aye.db.global.PullTime.metersDelayTime seconds after)
 					
 					local player = false;
 					if (
-							UnitInRaid(Unit) ~= nil
+							UnitInRaid(Unit)
 						or	UnitInParty(Unit)
 						or	UnitIsUnit(Unit, "player")
 					) then
@@ -298,38 +285,35 @@ Aye.modules.PullTime.events.COMBAT_LOG_EVENT_UNFILTERED = function(...)
 	then return end;
 	
 	-- note only first threat situation update
-	if Aye.modules.PullTime.meters.hit ~= nil then return end;
+	if Aye.modules.PullTime.meters.hit then return end;
 	
 	local _, event, _, sourceGUID, sourceName, sourceFlags, _, _, destName, destFlags = ...;
 	if not string.match(event, "_DAMAGE$") then return end;
 	
 	if
-			sourceName == nil
-		or	destName == nil
+			not sourceName
+		or	not destName
 		or	bit.band(sourceFlags, COMBATLOG_OBJECT_CONTROL_PLAYER) ~=COMBATLOG_OBJECT_CONTROL_PLAYER
 		or	bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_FRIENDLY) ~=COMBATLOG_OBJECT_REACTION_FRIENDLY
 		or	bit.band(sourceFlags, COMBATLOG_OBJECT_AFFILIATION_OUTSIDER) ==COMBATLOG_OBJECT_AFFILIATION_OUTSIDER
 		or	bit.band(destFlags, COMBATLOG_OBJECT_CONTROL_NPC) ~=COMBATLOG_OBJECT_CONTROL_NPC
 		or	bit.band(destFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~=COMBATLOG_OBJECT_REACTION_HOSTILE
-	then
-		return;
-	end;
+	then return end;
 	
 	local _, _, _, _, _, name = GetPlayerInfoByGUID(sourceGUID);
 	name = name or sourceName;
 	
+	-- check if Unit exists
 	local Unit = sourceName;
-	if Unit == nil then
-		return;
-	end;
+	if not Unit then return end;
 	
 	-- Raid Unit Hit state changed
-	if Aye.modules.PullTime.PlannedPullTime ~= nil then
+	if Aye.modules.PullTime.PlannedPullTime then
 		-- Pull countdown (or upto Aye.db.global.PullTime.metersDelayTime seconds after)
 		
 		local player = false;
 		if (
-				UnitInRaid(Unit) ~= nil
+				UnitInRaid(Unit)
 			or	UnitInParty(Unit)
 			or	UnitIsUnit(Unit, "player")
 		) then
@@ -445,7 +429,8 @@ Aye.modules.PullTime.checkReport = function()
 	end;
 	
 	if Aye.modules.PullTime.meters.count >= activeMeters then
-		Aye.libs.Timer.PullTime_report();
+		if Aye.modules.PullTime.timer then Aye.modules.PullTime.timer:Cancel() end;
+		Aye.modules.PullTime.timer = C_Timer.NewTimer(Aye.db.global.PullTime.antispamReportDelay /1000, Aye.modules.PullTime.report);
 	end;
 end;
 
@@ -453,307 +438,310 @@ end;
 --
 -- @noparam
 -- @noreturn
-Aye.libs.Timer.PullTime_report = function()
+Aye.modules.PullTime.report = function()
+	Aye.modules.PullTime.sendMessage();
+	
+	-- Kill DBM Pull countdown watcher
+	Aye.modules.PullTime.PlannedPullTime = nil;
+	Aye.modules.PullTime.meters = {count = 0};
+	Aye.modules.PullTime.NinjaPull = false;
+end;
+
+-- Send Report Message
+--
+-- @noparam
+-- @noreturn
+Aye.modules.PullTime.sendMessage = function()
+	-- Check if reporting is enabled
+	if not Aye.db.global.PullTime.enable then return end;
+	
+	-- Check for Antispam cooldown
+	if Aye.modules.PullTime.antispam.cooldown then return end;
+	
+	-- Check reporting conditions
+	if (
+			-- Disable
+			(
+					(
+							Aye.db.global.PullTime.GuildGroupDisable
+						and	Aye.utils.Player.InAllyGroup()
+					)
+				or	(
+							Aye.db.global.PullTime.LFGDisable
+						and	IsPartyLFG()
+					)
+				or	(
+							Aye.db.global.PullTime.PvPDisable
+						and	Aye.utils.Player.IsOnPvP()
+					)
+				or	(
+							Aye.db.global.PullTime.OutsideInstanceDisable
+						and	not IsInInstance()
+					)
+			)
+			-- Force enable
+		and	not (
+					(
+							Aye.db.global.PullTime.GuildGroupForceEnable
+						and	Aye.utils.Player.InAllyGroup()
+					)
+				or	(
+							Aye.db.global.PullTime.LFGForceEnable
+						and	IsPartyLFG()
+					)
+				or	(
+							Aye.db.global.PullTime.PvPForceEnable
+						and	Aye.utils.Player.IsOnPvP()
+					)
+				or	(
+							Aye.db.global.PullTime.OutsideInstanceForceEnable
+						and	not IsInInstance()
+					)
+			)
+	) then return end;
+	
 	-- Force Disable if Mythic Benched
 	if
 			Aye.db.global.PullTime.ForceDisableIfMythicBenched
 		and	Aye.utils.Player.IsMythicBenched()
 	then return end;
 	
+	-- don't show simple "Pull" or "Ninja Pull" word
+	if Aye.modules.PullTime.meters.count == 0 then return end;
+	
+	-- Aye.db.global.PullTime.showNinjaPull settings
 	if
-			Aye.db.global.PullTime.enable
-			
-			-- don't show simple "Pull" or "Ninja Pull" word
-		and	Aye.modules.PullTime.meters.count >0
+			Aye.modules.PullTime.NinjaPull
+		and	not Aye.db.global.PullTime.showNinjaPull
+	then return end;
+	
+	-- Pull Time mismatch
+	local pullTimeMismatch = 0;
+	local pullTimeMismatch_count = 0;
+	
+	-- message to be sent
+	local message = "";
+	
+	-- Encounter
+	if Aye.modules.PullTime.meters.encounter then
+		if
+				Aye.db.global.PullTime.showEncounterLink
+			and	Aye.modules.PullTime.meters.encounter.link ~= ""
+		then
+			message = message .." on " ..Aye.modules.PullTime.meters.encounter.link;
+		end;
 		
-			-- Aye.db.global.PullTime.showNinjaPull settings
-		and (
-					not Aye.modules.PullTime.NinjaPull
-				or	Aye.db.global.PullTime.showNinjaPull
-			)
-		and	not Aye.modules.PullTime.disableNotify
 		
-		and (
-					-- Force enable
-					(
-							(
-									Aye.db.global.PullTime.GuildGroupForceEnable
-								and	Aye.utils.Player.InAllyGroup()
-							)
-						or	(
-									Aye.db.global.PullTime.LFGForceEnable
-								and	IsPartyLFG()
-							)
-						or	(
-									Aye.db.global.PullTime.PvPForceEnable
-								and	Aye.utils.Player.IsOnPvP()
-							)
-						or	(
-									Aye.db.global.PullTime.OutsideInstanceForceEnable
-								and	not IsInInstance()
-							)
-					)
-					-- Disable
-				or	not (
-							(
-									Aye.db.global.PullTime.GuildGroupDisable
-								and	Aye.utils.Player.InAllyGroup()
-							)
-						or	(
-									Aye.db.global.PullTime.LFGDisable
-								and	IsPartyLFG()
-							)
-						or	(
-									Aye.db.global.PullTime.PvPDisable
-								and	Aye.utils.Player.IsOnPvP()
-							)
-						or	(
-									Aye.db.global.PullTime.OutsideInstanceDisable
-								and	not IsInInstance()
-							)
-					)
-			)
-	then
-		-- Pull Time mismatch
-		local pullTimeMismatch = 0;
-		local pullTimeMismatch_count = 0;
-		
-		-- message to be sent
-		local message = "";
-		-- tmp message to check if it's not too short
-		local tmpInvalidMessage = nil;
-		
-		if Aye.modules.PullTime.meters.encounter ~= nil then
-			if
-					Aye.db.global.PullTime.showEncounterLink
-				and	Aye.modules.PullTime.meters.encounter.link ~= ""
-			then
-				message = message .." on " ..Aye.modules.PullTime.meters.encounter.link;
-				tmpInvalidMessage = message;
-			end;
-			
-			if
-					Aye.db.global.PullTime.showEncounterStartTime
-				and	not Aye.modules.PullTime.NinjaPull
-				and Aye.modules.PullTime.meters.encounter.ms ~= nil
-			then
-				if
-						Aye.db.global.PullTime.showEncounterLink
-					and	Aye.modules.PullTime.meters.encounter.link ~= ""
-				then
-					message = message .." (" ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.encounter.ms) ..")";
-				else
-					message = message .." Encounter: " ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.encounter.ms);
-				end;
+		if
+				Aye.db.global.PullTime.showEncounterStartTime
+			and	not Aye.modules.PullTime.NinjaPull
+			and Aye.modules.PullTime.meters.encounter.ms
+		then
+			if message == "" then
+				message = message .." Encounter: " ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.encounter.ms);
+			else
+				message = message .." (" ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.encounter.ms) ..")";
 			end;
 			
 			pullTimeMismatch = pullTimeMismatch +abs(Aye.modules.PullTime.meters.encounter.ms);
 			pullTimeMismatch_count = pullTimeMismatch_count +1;
 		end;
-		if Aye.modules.PullTime.meters.target ~= nil then
+	end;
+	
+	-- Target
+	if Aye.modules.PullTime.meters.target then
+		if
+				Aye.db.global.PullTime.showTargetName
+			and	Aye.modules.PullTime.meters.target.name ~= ""
+		then
+			if message ~= "" then message = message ..", " end;
+			message = message .. " Target: " ..Aye.modules.PullTime.meters.target.name;
+		end;
+		
+		if
+				Aye.db.global.PullTime.showTargetPullTime
+			and	(
+						not Aye.modules.PullTime.NinjaPull
+					or	Aye.db.global.PullTime.showNinjaTimes
+				)
+			and Aye.modules.PullTime.meters.target.ms
+		then
 			if
 					Aye.db.global.PullTime.showTargetName
 				and	Aye.modules.PullTime.meters.target.name ~= ""
 			then
+				message = message .. " (" ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.target.ms) ..")";
+			else
 				if message ~= "" then message = message ..", " end;
-				message = message .. " Target: " ..Aye.modules.PullTime.meters.target.name;
-			end;
-			
-			if
-					Aye.db.global.PullTime.showTargetPullTime
-				and	(
-						not Aye.modules.PullTime.NinjaPull
-					or	Aye.db.global.PullTime.showNinjaTimes
-				)
-				and Aye.modules.PullTime.meters.target.ms ~= nil
-			then
-				if
-						Aye.db.global.PullTime.showTargetName
-					and	Aye.modules.PullTime.meters.target.name ~= ""
-				then
-					message = message .. " (" ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.target.ms) ..")";
-				else
-					if message ~= "" then message = message ..", " end;
-					message = message .. " Target: " ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.target.ms);
-				end;
+				message = message .. " Target: " ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.target.ms);
 			end;
 			
 			pullTimeMismatch = pullTimeMismatch +abs(Aye.modules.PullTime.meters.target.ms);
 			pullTimeMismatch_count = pullTimeMismatch_count +1;
 		end;
-		if Aye.modules.PullTime.meters.aggro ~= nil then
+	end;
+	
+	-- Aggro
+	if Aye.modules.PullTime.meters.aggro then
+		if
+				Aye.db.global.PullTime.showAggroName
+			and	Aye.modules.PullTime.meters.aggro.name ~= ""
+		then
+			if message ~= "" then message = message ..", " end;
+			message = message .. " Aggro: " ..Aye.modules.PullTime.meters.aggro.name;
+		end;
+		
+		if
+				Aye.db.global.PullTime.showAggroPullTime
+			and	(
+						not Aye.modules.PullTime.NinjaPull
+					or	Aye.db.global.PullTime.showNinjaTimes
+				)
+			and Aye.modules.PullTime.meters.aggro.ms
+		then
 			if
 					Aye.db.global.PullTime.showAggroName
 				and	Aye.modules.PullTime.meters.aggro.name ~= ""
 			then
+				message = message .. " (" ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.aggro.ms) ..")";
+			else
 				if message ~= "" then message = message ..", " end;
-				message = message .. " Aggro: " ..Aye.modules.PullTime.meters.aggro.name;
-			end;
-			
-			if
-					Aye.db.global.PullTime.showAggroPullTime
-				and	(
-						not Aye.modules.PullTime.NinjaPull
-					or	Aye.db.global.PullTime.showNinjaTimes
-				)
-				and Aye.modules.PullTime.meters.aggro.ms ~= nil
-			then
-				if
-						Aye.db.global.PullTime.showAggroName
-					and	Aye.modules.PullTime.meters.aggro.name ~= ""
-				then
-					message = message .. " (" ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.aggro.ms) ..")";
-				else
-					if message ~= "" then message = message ..", " end;
-					message = message .. " Aggro: " ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.aggro.ms);
-				end;
+				message = message .. " Aggro: " ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.aggro.ms);
 			end;
 			
 			pullTimeMismatch = pullTimeMismatch +abs(Aye.modules.PullTime.meters.aggro.ms);
 			pullTimeMismatch_count = pullTimeMismatch_count +1;
 		end;
-		if Aye.modules.PullTime.meters.hit ~= nil then
+	end;
+	
+	-- Hit
+	if Aye.modules.PullTime.meters.hit then
+		if
+				Aye.db.global.PullTime.showHitName
+			and	Aye.modules.PullTime.meters.hit.name ~= ""
+		then
+			if message ~= "" then message = message ..", " end;
+			message = message .. " Hit: " ..Aye.modules.PullTime.meters.hit.name;
+		end;
+		
+		if
+				Aye.db.global.PullTime.showHitSpell
+			and	Aye.modules.PullTime.meters.hit.spell ~= ""
+		then
 			if
 					Aye.db.global.PullTime.showHitName
 				and	Aye.modules.PullTime.meters.hit.name ~= ""
 			then
+				message = message .. " by " ..Aye.modules.PullTime.meters.hit.spell;
+			else
 				if message ~= "" then message = message ..", " end;
-				message = message .. " Hit: " ..Aye.modules.PullTime.meters.hit.name;
+				message = message .. " Hit: " ..Aye.modules.PullTime.meters.hit.spell;
 			end;
-			
-			if
-					Aye.db.global.PullTime.showHitSpell
-				and	Aye.modules.PullTime.meters.hit.spell ~= ""
-			then
-				if
-						Aye.db.global.PullTime.showHitName
-					and	Aye.modules.PullTime.meters.hit.name ~= ""
-				then
-					message = message .. " by " ..Aye.modules.PullTime.meters.hit.spell;
-				else
-					if message ~= "" then message = message ..", " end;
-					message = message .. " Hit: " ..Aye.modules.PullTime.meters.hit.spell;
-				end;
-			end;
-			
-			if
-					Aye.db.global.PullTime.showHitPullTime
-				and	(
+		end;
+		
+		if
+				Aye.db.global.PullTime.showHitPullTime
+			and	(
 						not Aye.modules.PullTime.NinjaPull
 					or	Aye.db.global.PullTime.showNinjaTimes
 				)
-				and Aye.modules.PullTime.meters.hit.ms ~= nil
+			and Aye.modules.PullTime.meters.hit.ms
+		then
+			if
+					(
+							Aye.db.global.PullTime.showHitName
+						and	Aye.modules.PullTime.meters.hit.name ~= ""
+					)
+				or	(
+							Aye.db.global.PullTime.showHitSpell
+						and	Aye.modules.PullTime.meters.hit.spell ~= ""
+					)
 			then
-				if
-						(
-								Aye.db.global.PullTime.showHitName
-							and	Aye.modules.PullTime.meters.hit.name ~= ""
-						)
-					or	(
-								Aye.db.global.PullTime.showHitSpell
-							and	Aye.modules.PullTime.meters.hit.spell ~= ""
-						)
-				then
-					message = message .. " (" ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.hit.ms) ..")";
-				else
-					if message ~= "" then message = message ..", " end;
-					message = message .. " Hit: " ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.hit.ms);
-				end;
+				message = message .. " (" ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.hit.ms) ..")";
+			else
+				if message ~= "" then message = message ..", " end;
+				message = message .. " Hit: " ..Aye.modules.PullTime.formatTime(Aye.modules.PullTime.meters.hit.ms);
 			end;
 			
 			pullTimeMismatch = pullTimeMismatch +abs(Aye.modules.PullTime.meters.hit.ms);
 			pullTimeMismatch_count = pullTimeMismatch_count +1;
 		end;
-		
-		if
-				-- at least one Pull Time meter must be filled
-				pullTimeMismatch_count >0
-			and	not (
-						tmpInvalidMessage ~= nil
-					and	message == tmpInvalidMessage
-				)
-		then
-			-- average of Pull Time meters
-			pullTimeMismatch = pullTimeMismatch /pullTimeMismatch_count;
-			
-			-- add "Ninja" word
-			if
-					Aye.modules.PullTime.NinjaPull
-				and	showNinjaWord
-			then
-				message = "Ninja " ..message;
-			end;
-			
-			-- add message header
-			message = "Pull" ..message;
-			
-			-- @todo: rewrite it
-			local bPrint = false;
-			
-			-- prefix of message
-			local prefix = "";
-			if Aye.db.global.PullTime.reportWithAyePrefix then
-				prefix = prefix ..(bPrint and "|cff9d9d9d[|r|cffe6cc80Aye|r|cff9d9d9d]|r " or "[Aye] ");
-			end;
-			
-			if pullTimeMismatch >Aye.db.global.PullTime.missPullTimeTolerance then
-				-- misstime tolerance time exceeded, display warning
-				if Aye.db.global.PullTime.reportWithWarningPrefix then
-					-- "WARNING!" spell
-					prefix = prefix ..GetSpellLink(176781) .." ";
-				end;
-			elseif Aye.db.global.PullTime.showOnlyMispulled then
-				-- pull time in misstime tolerance time, no warn
-				return;
-			end;
-			
-			-- add message prefix
-			message = prefix ..message;
-			
-			-- display message on chosen channel
-			if
-					Aye.db.global.PullTime.channel == "Print"
-				or	(
-							(
-									Aye.db.global.PullTime.channel == "RW"
-								or	Aye.db.global.PullTime.channel == "Raid"
-							)
-						and	not IsInGroup()
-					)
-				or	(
-							(
-									Aye.db.global.PullTime.channel == "Guild"
-								or	Aye.db.global.PullTime.channel == "Officer"
-							)
-						and	not IsInGuild()
-					)
-				or	(
-							Aye.db.global.PullTime.forcePrintInGuildGroup
-						and	Aye.utils.Player.InAllyGroup()
-					)
-			then
-				print(message);
-			elseif Aye.db.global.PullTime.channel == "Dynamic" then
-				Aye.utils.Chat.SendChatMessage(message);
-			elseif Aye.db.global.PullTime.channel == "RW" then
-				SendChatMessage(message, Aye.utils.Chat.GetGroupChannel(true));
-			elseif Aye.db.global.PullTime.channel == "Raid" then
-				SendChatMessage(message, Aye.utils.Chat.GetGroupChannel(false));
-			else
-				SendChatMessage(message, Aye.db.global.PullTime.channel);
-			end;
-			
-			if
-					IsInGroup()
-				and	Aye.db.global.PullTime.channel ~= "Print"
-			then
-				-- tell other Aye users that we handled event already
-				-- antispam: disable other's notifies for 10s
-				SendAddonMessage("Aye", "PullTime",	"RAID");
-			end;
-		end;
 	end;
 	
-	-- Kill DBM Pull countdown watcher
-	Aye.libs.Timer.PullTime_clear();
+	-- at least one Pull Time meter must be filled
+	if pullTimeMismatch_count == 0 then return end;
+	
+	-- average of Pull Time meters
+	pullTimeMismatch = pullTimeMismatch /pullTimeMismatch_count;
+	
+	-- add "Ninja" word
+	if
+			Aye.modules.PullTime.NinjaPull
+		and	showNinjaWord
+	then
+		message = "Ninja " ..message;
+	end;
+	
+	-- add message header
+	message = "Pull" ..message;
+	
+	-- if message should be printed instead of sent
+	local bPrint = (
+			Aye.db.global.Warnings.channel == "Print"
+		or	(
+					(
+							Aye.db.global.Warnings.channel == "RW"
+						or	Aye.db.global.Warnings.channel == "Raid"
+					)
+				and	not IsInGroup()
+			)
+		or	(
+					(
+							Aye.db.global.PullTime.channel == "Guild"
+						or	Aye.db.global.PullTime.channel == "Officer"
+					)
+				and	not IsInGuild()
+			)
+		or	(
+					Aye.db.global.Warnings.forcePrintInGuildGroup
+				and	Aye.utils.Player.InAllyGroup()
+			)
+	);
+	
+	-- prefix of message
+	local prefix = "";
+	if Aye.db.global.PullTime.reportWithAyePrefix then
+		prefix = prefix ..(bPrint and "|cff9d9d9d[|r|cffe6cc80Aye|r|cff9d9d9d]|r " or "[Aye] ");
+	end;
+	
+	if pullTimeMismatch >Aye.db.global.PullTime.missPullTimeTolerance then
+		-- misstime tolerance time exceeded, display warning
+		if Aye.db.global.PullTime.reportWithWarningPrefix then
+			-- "WARNING!" spell
+			prefix = prefix ..GetSpellLink(176781) .." ";
+		end;
+	elseif Aye.db.global.PullTime.showOnlyMispulled then
+		-- pull time in misstime tolerance time, no warn
+		return;
+	end;
+	
+	-- add message prefix
+	message = prefix ..message;
+	
+	-- display message on chosen channel
+	if bPrint then
+		print(message);
+	elseif Aye.db.global.PullTime.channel == "Dynamic" then
+		Aye.utils.Chat.SendChatMessage(message);
+	elseif Aye.db.global.PullTime.channel == "RW" then
+		SendChatMessage(message, Aye.utils.Chat.GetGroupChannel(true));
+	elseif Aye.db.global.PullTime.channel == "Raid" then
+		SendChatMessage(message, Aye.utils.Chat.GetGroupChannel(false));
+	else
+		SendChatMessage(message, Aye.db.global.PullTime.channel);
+	end;
+	
+	-- tell other Aye users that we handled event already
+	-- antispam: disable other's notifies for 10s
+	SendAddonMessage("Aye", "PullTime",	Aye.utils.Chat.GetGroupChannel(false));
 end;
