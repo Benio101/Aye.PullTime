@@ -6,15 +6,11 @@
 ## Version: 1.0.6
 ## Interface: 70200
 
-#libs
-libs/AceTimer-3.0\AceTimer-3.0.xml
-
 #utils
 utils/Chat.lua
 utils/Player.lua
 
 #files
-Aye.PullTime.h.lua
 Aye.PullTime.lua
 Aye.PullTime.options.lua
 Aye.PullTime.options.default.lua
