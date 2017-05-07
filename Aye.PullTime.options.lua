@@ -566,13 +566,13 @@ Aye.options.args.PullTime = {
 			softMin = 5,
 			softMax = 30,
 			bigStep = 5,
-			get = function() return Aye.db.global.Warnings.antispamCooldown end,
-			set = function(_, v) Aye.db.global.Warnings.antispamCooldown = v end,
+			get = function() return Aye.db.global.PullTime.antispamCooldown end,
+			set = function(_, v) Aye.db.global.PullTime.antispamCooldown = v end,
 			disabled = function() return
-					not Aye.db.global.Warnings.enable
+					not Aye.db.global.PullTime.enable
 				or	(
-							not Aye.db.global.Warnings.enableReadyCheck
-						and	not Aye.db.global.Warnings.enablePull
+							not Aye.db.global.PullTime.enableReadyCheck
+						and	not Aye.db.global.PullTime.enablePull
 					)
 			end,
 		},
@@ -586,13 +586,13 @@ Aye.options.args.PullTime = {
 			softMin = 0,
 			softMax = 3000,
 			bigStep = 200,
-			get = function() return Aye.db.global.Warnings.antispamReportDelay end,
-			set = function(_, v) Aye.db.global.Warnings.antispamReportDelay = v end,
+			get = function() return Aye.db.global.PullTime.antispamReportDelay end,
+			set = function(_, v) Aye.db.global.PullTime.antispamReportDelay = v end,
 			disabled = function() return
-					not Aye.db.global.Warnings.enable
+					not Aye.db.global.PullTime.enable
 				or	(
-							not Aye.db.global.Warnings.enableReadyCheck
-						and	not Aye.db.global.Warnings.enablePull
+							not Aye.db.global.PullTime.enableReadyCheck
+						and	not Aye.db.global.PullTime.enablePull
 					)
 			end,
 		},
