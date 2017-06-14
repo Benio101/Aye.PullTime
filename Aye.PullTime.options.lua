@@ -568,13 +568,7 @@ Aye.options.args.PullTime = {
 			bigStep = 5,
 			get = function() return Aye.db.global.PullTime.antispamCooldown end,
 			set = function(_, v) Aye.db.global.PullTime.antispamCooldown = v end,
-			disabled = function() return
-					not Aye.db.global.PullTime.enable
-				or	(
-							not Aye.db.global.PullTime.enableReadyCheck
-						and	not Aye.db.global.PullTime.enablePull
-					)
-			end,
+			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 		antispamReportDelay = {
 			order = 155,
@@ -588,13 +582,7 @@ Aye.options.args.PullTime = {
 			bigStep = 200,
 			get = function() return Aye.db.global.PullTime.antispamReportDelay end,
 			set = function(_, v) Aye.db.global.PullTime.antispamReportDelay = v end,
-			disabled = function() return
-					not Aye.db.global.PullTime.enable
-				or	(
-							not Aye.db.global.PullTime.enableReadyCheck
-						and	not Aye.db.global.PullTime.enablePull
-					)
-			end,
+			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 	},
 };
