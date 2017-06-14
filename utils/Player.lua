@@ -1,5 +1,5 @@
 local Aye = Aye;
-if not LibStub:NewLibrary("Aye.utils.Player", 3) then return end;
+if not LibStub:NewLibrary("Aye.utils.Player", 4) then return end;
 Aye.utils.Player = Aye.utils.Player or {};
 
 -- @noparam
@@ -11,6 +11,20 @@ Aye.utils.Player.IsOnPvP = function()
 		or	instanceType == "pvp"
 	then
 		return true;
+	end;
+	
+	return false;
+end;
+
+-- @param {string} unit
+-- @return {bool} isFriend if given unit is player's friend (from friends list)
+Aye.utils.Player.IsFriend = function(unit)
+	local unitName = UnitName(unit);
+	for i = 1, GetNumFriends() do
+		local name = GetFriendInfo(i);
+		if name == unitName then
+			return true;
+		end;
 	end;
 	
 	return false;
