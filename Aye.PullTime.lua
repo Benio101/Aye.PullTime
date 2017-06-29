@@ -523,10 +523,10 @@ Aye.modules.PullTime.sendMessage = function()
 			)
 	) then return end;
 	
-	-- Force Disable if Mythic Benched
+	-- Force Disable if Benched
 	if
-			Aye.db.global.PullTime.ForceDisableIfMythicBenched
-		and	Aye.utils.Player.IsMythicBenched()
+			Aye.db.global.PullTime.ForceDisableIfBenched
+		and	Aye.utils.Player.IsBenched()
 	then return end;
 	
 	-- don't show simple "Pull" or "Ninja Pull" word

@@ -1,5 +1,5 @@
 local Aye = Aye;
-if not LibStub:NewLibrary("Aye.utils.Player", 4) then return end;
+if not LibStub:NewLibrary("Aye.utils.Player", 5) then return end;
 Aye.utils.Player = Aye.utils.Player or {};
 
 -- @noparam
@@ -76,22 +76,33 @@ Aye.utils.Player.InAllyGroup = function()
 end;
 
 -- @noparam
--- @return {bool} IsMythicBenched if player is in Mythic Raid Group in outside Party 1–4
-Aye.utils.Player.IsMythicBenched = function()
-	if not (
-			IsInRaid()
-		and	not IsPartyLFG()
-		and	GetRaidDifficultyID() == DIFFICULTY_PRIMARYRAID_MYTHIC
-	) then return false end;
+-- @return {bool} IsBenched if player is either:
+-- 		in Mythic Raid Group in outside Party 1–4
+-- 	OR	in Normal/Heroic Raid Group in outside Party 1–6
+Aye.utils.Player.IsBenched = function()
+	if
+			not IsInRaid()
+		or	IsPartyLFG()
+		or	not Aye.utils.Player.InAllyGroup()
+	then return false end;
+	
+	-- groups per raid difficulty
+	local groups = false;
+	local difficulty = GetRaidDifficultyID();
+	if difficulty == DIFFICULTY_PRIMARYRAID_MYTHIC then groups = 4 end;
+	if
+			difficulty == DIFFICULTY_PRIMARYRAID_HEROIC
+		or	difficulty == DIFFICULTY_PRIMARYRAID_NORMAL
+	then groups = 6 end;
+	if groups == false then return false end;
 	
 	local members = max(1, GetNumGroupMembers());
-	if Aye.utils.Player.InAllyGroup() then return false end;
 	
 	for rid = 1, members do
 		if UnitIsUnit("player", "raid" ..rid) then
 			local _, _, pid = GetRaidRosterInfo(rid);
 			
-			return (pid >4);
+			return (pid >groups);
 		end;
 	end;
 	
