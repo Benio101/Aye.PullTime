@@ -2,11 +2,6 @@ local Aye = Aye;
 if not Aye.addModule("Aye.PullTime") then return end;
 
 Aye.modules.PullTime.OnEnable = function()
-	-- start profiling (used to get ms precision)
-	if not debugprofilestop() then
-		debugprofilestart();
-	end;
-	
 	RegisterAddonMessagePrefix("Aye");	-- Aye
 	RegisterAddonMessagePrefix("D4");	-- DBM
 	
