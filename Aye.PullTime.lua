@@ -755,17 +755,19 @@ Aye.modules.PullTime.sendMessage = function()
 	-- display message on chosen channel
 	if bPrint then
 		print(message);
-	elseif Aye.db.global.PullTime.channel == "Dynamic" then
-		Aye.utils.Chat.SendChatMessage(message);
-	elseif Aye.db.global.PullTime.channel == "RW" then
-		SendChatMessage(message, Aye.utils.Chat.GetGroupChannel(true));
-	elseif Aye.db.global.PullTime.channel == "Raid" then
-		SendChatMessage(message, Aye.utils.Chat.GetGroupChannel(false));
 	else
-		SendChatMessage(message, Aye.db.global.PullTime.channel);
+		if Aye.db.global.PullTime.channel == "Dynamic" then
+			Aye.utils.Chat.SendChatMessage(message);
+		elseif Aye.db.global.PullTime.channel == "RW" then
+			SendChatMessage(message, Aye.utils.Chat.GetGroupChannel(true));
+		elseif Aye.db.global.PullTime.channel == "Raid" then
+			SendChatMessage(message, Aye.utils.Chat.GetGroupChannel(false));
+		else
+			SendChatMessage(message, Aye.db.global.PullTime.channel);
+		end;
+		
+		-- tell other Aye users that we handled event already
+		-- antispam: disable other's notifies for short delay
+		SendAddonMessage("Aye", "PullTime",	Aye.utils.Chat.GetGroupChannel(false));
 	end;
-	
-	-- tell other Aye users that we handled event already
-	-- antispam: disable other's notifies for 10s
-	SendAddonMessage("Aye", "PullTime",	Aye.utils.Chat.GetGroupChannel(false));
 end;
