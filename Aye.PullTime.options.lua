@@ -39,9 +39,9 @@ Aye.options.args.PullTime = {
 		description6 = {
 			order = 6,
 			type = "description",
-			name = "This module is currently temporary |cff9d9d9ddisabled|r at will and should no longer work.\n"
+			name = "\nThis module is currently temporary |cff9d9d9ddisabled|r at will and should no longer work.\n"
 				.. "|cff9d9d9dIf you wish to keep this module disabled, you should disable related addon completelly.\n"
-				.. "You can always re–enable module by re–enabling related addon addon the same way.\n|r"
+				.. "You can always re–enable module by re–enabling related addon addon the same way.|r"
 			,
 			hidden = function() return Aye.db.global.PullTime.enable end,
 		},
@@ -57,6 +57,11 @@ Aye.options.args.PullTime = {
 				Aye.libs.ConfigRegistry:NotifyChange("Aye");
 			end,
 			hidden = function() return not Aye.db.global.PullTime.enable end,
+		},
+		description10 = {
+			order = 10,
+			type = "description",
+			name = "\n",
 		},
 		header11 = {
 			order = 11,
@@ -85,6 +90,11 @@ Aye.options.args.PullTime = {
 			get = function() return Aye.db.global.PullTime.showOnlyMispulled end,
 			set = function(_, v) Aye.db.global.PullTime.showOnlyMispulled = v end,
 			disabled = function() return not Aye.db.global.PullTime.enable end,
+		},
+		description20 = {
+			order = 20,
+			type = "description",
+			name = "\n",
 		},
 		header21 = {
 			order = 21,
@@ -274,13 +284,18 @@ Aye.options.args.PullTime = {
 					)
 			end,
 		},
-		header36 = {
-			order = 36,
+		description90 = {
+			order = 90,
+			type = "description",
+			name = "\n",
+		},
+		header96 = {
+			order = 96,
 			type = "header",
 			name = "Delay options",
 		},
 		enableDelay = {
-			order = 37,
+			order = 97,
 			name = "|cffe6cc80Enable|r Delaying Info",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.enableDelay end,
@@ -288,7 +303,7 @@ Aye.options.args.PullTime = {
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 		metersDelayTime = {
-			order = 38,
+			order = 98,
 			name = "Maximum Delay |cff9d9d9d(in s)|r",
 			type = "range",
 			min = 0,
@@ -303,8 +318,8 @@ Aye.options.args.PullTime = {
 				or	not Aye.db.global.PullTime.enableDelay
 			end,
 		},
-		description39 = {
-			order = 39,
+		description99 = {
+			order = 99,
 			type = "description",
 			name = "\nPull Time information is sent to chat once all chosen meters are filled. "
 				.. "|cffe6cc80Maximum Delay|r determined maximum waiting time for all meters. "
@@ -313,13 +328,18 @@ Aye.options.args.PullTime = {
 				.. "|cffe6cc80Recommendation|r|cff9d9d9d: keep this option enabled at all time, eventually adjusting |cffe6cc80Maximum Delay|r time.|r\n"
 			,
 		},
-		header41 = {
-			order = 41,
+		description120 = {
+			order = 120,
+			type = "description",
+			name = "\n",
+		},
+		header121 = {
+			order = 121,
 			type = "header",
 			name = "Ninja options",
 		},
 		showNinjaPull = {
-			order = 43,
+			order = 123,
 			name = "|cffe6cc80Show|r Ninja Pulls |cff9d9d9d(Pulls without Pull Timer that won't contain Pull Timers)",
 			type = "toggle",
 			width = "full",
@@ -328,7 +348,7 @@ Aye.options.args.PullTime = {
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 		showNinjaWord = {
-			order = 44,
+			order = 124,
 			name = "|cffe6cc80Show|r |cff9d9d9d\"|r|cffe6cc80Ninja|r|cff9d9d9d\"|r Pull word",
 			desc = "|cffe6cc80Show|r |cff9d9d9d\"|r|cffe6cc80Ninja Pull|r|cff9d9d9d\"|r instead of simple |cff9d9d9d\"|r|cffe6cc80Pull|r|cff9d9d9d\"|r on Ninja Pulls.",
 			type = "toggle",
@@ -340,7 +360,7 @@ Aye.options.args.PullTime = {
 			end,
 		},
 		showNinjaTimes = {
-			order = 46,
+			order = 126,
 			name = "|cffe6cc80Show|r Ninja Pull times",
 			desc = "By default, timers are not shown on Ninja Pulls as there is not planned pull time.\n\n"
 				.. "However, if enabled, times will be shown relative to encounter start time instead."
@@ -353,13 +373,18 @@ Aye.options.args.PullTime = {
 				or	not Aye.db.global.PullTime.showNinjaPull
 			end,
 		},
-		header51 = {
-			order = 51,
+		description150 = {
+			order = 150,
+			type = "description",
+			name = "\n",
+		},
+		header151 = {
+			order = 151,
 			type = "header",
 			name = "Instance Filter",
 		},
 		GuildGroupDisable = {
-			order = 53,
+			order = 153,
 			name = "|cffe6cc80Disable|r in Ally Group",
 			desc = "|cffe6cc80Disable|r in Ally Group |cff9d9d9d(at least half of other members are either friends or guildmates)|r",
 			type = "toggle",
@@ -371,7 +396,7 @@ Aye.options.args.PullTime = {
 			end,
 		},
 		LFGDisable = {
-			order = 54,
+			order = 154,
 			name = "|cffe6cc80Disable|r in LFG group",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.LFGDisable end,
@@ -382,7 +407,7 @@ Aye.options.args.PullTime = {
 			end,
 		},
 		PvPDisable = {
-			order = 56,
+			order = 156,
 			name = "|cffe6cc80Disable|r on PvP",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.PvPDisable end,
@@ -393,7 +418,7 @@ Aye.options.args.PullTime = {
 			end,
 		},
 		OutsideInstanceDisable = {
-			order = 57,
+			order = 157,
 			name = "|cffe6cc80Disable|r outside Instance",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.OutsideInstanceDisable end,
@@ -403,18 +428,23 @@ Aye.options.args.PullTime = {
 				or	Aye.db.global.PullTime.OutsideInstanceForceEnable
 			end,
 		},
-		header61 = {
-			order = 61,
+		description160 = {
+			order = 160,
+			type = "description",
+			name = "\n",
+		},
+		header161 = {
+			order = 161,
 			type = "header",
 			name = "Force Enable",
 		},
-		description62 = {
-			order = 62,
+		description162 = {
+			order = 162,
 			type = "description",
 			name = "|cffe6cc80Force Enable|r Pull Time independing of Instance Filter.\n",
 		},
 		GuildGroupForceEnable = {
-			order = 63,
+			order = 163,
 			name = "|cffe6cc80Force Enable|r in Ally Group",
 			desc = "|cffe6cc80Force Enable|r in Ally Group |cff9d9d9d(at least half of other members are either friends or guildmates)|r",
 			type = "toggle",
@@ -426,7 +456,7 @@ Aye.options.args.PullTime = {
 			end,
 		},
 		LFGForceEnable = {
-			order = 64,
+			order = 164,
 			name = "|cffe6cc80Force Enable|r in LFG group",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.LFGForceEnable end,
@@ -437,7 +467,7 @@ Aye.options.args.PullTime = {
 			end,
 		},
 		PvPForceEnable = {
-			order = 66,
+			order = 166,
 			name = "|cffe6cc80Force Enable|r on PvP",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.PvPForceEnable end,
@@ -448,7 +478,7 @@ Aye.options.args.PullTime = {
 			end,
 		},
 		OutsideInstanceForceEnable = {
-			order = 67,
+			order = 167,
 			name = "|cffe6cc80Force Enable|r outside Instance",
 			type = "toggle",
 			get = function() return Aye.db.global.PullTime.OutsideInstanceForceEnable end,
@@ -458,18 +488,23 @@ Aye.options.args.PullTime = {
 				or	Aye.db.global.PullTime.OutsideInstanceDisable
 			end,
 		},
-		header91 = {
-			order = 91,
+		description190 = {
+			order = 190,
+			type = "description",
+			name = "\n",
+		},
+		header191 = {
+			order = 191,
 			type = "header",
 			name = "Force Disable",
 		},
-		description92 = {
-			order = 92,
+		description192 = {
+			order = 192,
 			type = "description",
 			name = "|cffe6cc80Force Disable|r is most important and overwrites even |cffe6cc80Force Enable|r.\n",
 		},
 		ForceDisableIfBenched = {
-			order = 93,
+			order = 193,
 			name = "|cffe6cc80Force Disable|r if Benched |cff9d9d9d(in Ally Group outside party #1–4/6)|r",
 			desc = "|cffe6cc80Force Disable|r in Ally Group |cff9d9d9d(at least half of other members are either friends or guildmates)|r if outside party"
 				.. " #1–4 |cff9d9d9d(on Mythic difficulty)|r or #1–6 |cff9d9d9d(on Normal/Heroic difficulty)|r.\n\n"
@@ -481,13 +516,18 @@ Aye.options.args.PullTime = {
 			set = function(_, v) Aye.db.global.PullTime.ForceDisableIfBenched = v end,
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
-		header111 = {
-			order = 111,
+		description210 = {
+			order = 210,
+			type = "description",
+			name = "\n",
+		},
+		header211 = {
+			order = 211,
 			type = "header",
 			name = "Chat Channel",
 		},
-		description112 = {
-			order = 112,
+		description212 = {
+			order = 212,
 			type = "description",
 			name = "\"|cffe6cc80Raid|r\" means \"|cfff3e6c0Instance|r\" in LFR, or \"|cfff3e6c0Party|r\" if player is not in raid."
 				.. "\n\"|cffe6cc80Raid Warning|r\" channel behaves like \"|cffe6cc80Raid|r\" if player cannot Raid Warning."
@@ -495,7 +535,7 @@ Aye.options.args.PullTime = {
 			,
 		},
 		channel = {
-			order = 113,
+			order = 213,
 			name = "Chat Channel",
 			desc = "The chat channel where message will be sent",
 			type = "select",
@@ -514,7 +554,7 @@ Aye.options.args.PullTime = {
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 		forcePrintInGuildGroup = {
-			order = 114,
+			order = 214,
 			name = "|cffe6cc80Force Print|r in Ally Group",
 			desc = "In Ally Group |cff9d9d9d(at least half of other members are either friends or guildmates)|r prints message instead of sending it on chat",
 			type = "toggle",
@@ -526,7 +566,7 @@ Aye.options.args.PullTime = {
 			end,
 		},
 		reportWithAyePrefix = {
-			order = 117,
+			order = 217,
 			name = "Add inline |cff9d9d9d\"[|r|cffe6cc80Aye|r|cff9d9d9d] \"|r prefix before message",
 			type = "toggle",
 			width = "full",
@@ -535,7 +575,7 @@ Aye.options.args.PullTime = {
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 		reportWithWarningPrefix = {
-			order = 118,
+			order = 218,
 			name = "Add inline |cff9d9d9d\"" ..GetSpellLink(176781) .." \"|r prefix before message",
 			type = "toggle",
 			width = "full",
@@ -543,13 +583,18 @@ Aye.options.args.PullTime = {
 			set = function(_, v) Aye.db.global.PullTime.reportWithWarningPrefix = v end,
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
-		header151 = {
-			order = 151,
+		description250 = {
+			order = 250,
+			type = "description",
+			name = "\n",
+		},
+		header251 = {
+			order = 251,
 			type = "header",
 			name = "Antispam",
 		},
-		description152 = {
-			order = 152,
+		description252 = {
+			order = 252,
 			type = "description",
 			name = "Prevent sending pull time information multiple times within small amount of time.\n\n"
 				.. "Once all pull times are fully determined, it is required to pass some time before reporting it, "
@@ -558,7 +603,7 @@ Aye.options.args.PullTime = {
 			,
 		},
 		antispamCooldown = {
-			order = 154,
+			order = 254,
 			name = "Antispam Cooldown |cff9d9d9d(in s)|r",
 			desc = "Minimum amount of time |cff9d9d9d(in seconds)|r that must pass before sending pull time information again.",
 			type = "range",
@@ -572,7 +617,7 @@ Aye.options.args.PullTime = {
 			disabled = function() return not Aye.db.global.PullTime.enable end,
 		},
 		antispamReportDelay = {
-			order = 155,
+			order = 255,
 			name = "Pull Time Info Delay |cff9d9d9d(in ms)|r",
 			desc = "Pull Time Info Delay by specified amount of time |cff9d9d9d(in milliseconds)|r.\n\n",
 			type = "range",
