@@ -5,11 +5,6 @@ Aye.modules.PullTime.OnEnable = function()
 	RegisterAddonMessagePrefix("Aye");	-- Aye
 	RegisterAddonMessagePrefix("D4");	-- DBM
 	
-	-- DBM 0 second Pull Time (profiled ms or nil if no pull countdown active)
-	-- set back to nil Aye.db.global.PullTime.metersDelayTime seconds after planned pull or when all Pull Time meters are filled
-	-- On DMB Pull, gets value equal to debugprofilestop() +seconds *1000 where seconds are seconds to pull
-	Aye.modules.PullTime.PlannedPullTime = nil;
-	
 	-- Pull Time meters cointaining information Who Pulled and When Pulled by certain ways
 	-- .count contains number of Pull Time meters are filled
 	Aye.modules.PullTime.meters = {count = 0};
@@ -23,11 +18,38 @@ Aye.modules.PullTime.OnEnable = function()
 		"hit",			-- COMBAT_LOG_EVENT_UNFILTERED
 	};
 	
+	-- planned Pull Time
+	Aye.modules.PullTime.PlannedPullTime = nil;
+	
 	-- mark for ninja pulls
 	Aye.modules.PullTime.NinjaPull = false;
 	
-	-- anti chat spam system
-	Aye.modules.PullTime.antispam = {cooldown = false};
+	-- antispam: last report time
+	Aye.modules.PullTime.lastReport = nil;
+	
+	-- cooldown: prevent ENCOUNTER_START handle soon after ENCOUNTER_END
+	-- it looks like ENCOUNTER_START fires sometimes right after ENCOUNTER_END (before boss respawn)
+	Aye.modules.PullTime.lastENCOUNTER_END = nil;
+end;
+
+-- reset collected pull info data
+--
+-- @param {bool} reported if report was actually made
+-- @noreturn
+Aye.modules.PullTime.reset = function(reported)
+	if reported then
+		Aye.modules.PullTime.lastReport = GetTime();
+	end;
+	
+	Aye.modules.PullTime.PlannedPullTime = nil;
+	Aye.modules.PullTime.meters = {count = 0};
+	Aye.modules.PullTime.NinjaPull = false;
+	
+	-- Aye.modules.PullTime.timer is a timer
+	-- of delayed Aye.modules.PullTime.report()
+	if Aye.modules.PullTime.timer then
+		Aye.modules.PullTime.timer:Cancel();
+	end;
 end;
 
 Aye.modules.PullTime.events.CHAT_MSG_ADDON = function(...)
@@ -42,11 +64,8 @@ Aye.modules.PullTime.events.CHAT_MSG_ADDON = function(...)
 		and	message
 		and	message == "PullTime"
 	then
-		Aye.modules.PullTime.antispam.cooldown = true;
-		if Aye.modules.PullTime.antispam.timer then Aye.modules.PullTime.antispam.timer:Cancel() end;
-		Aye.modules.PullTime.antispam.timer = C_Timer.NewTimer(Aye.db.global.PullTime.antispamCooldown, function()
-			Aye.modules.PullTime.antispam.cooldown = false;
-		end);
+		-- Aye PullTime report received
+		Aye.modules.PullTime.reset(true);
 	end;
 	
 	-- DBM Pull Time broadcast handle
@@ -65,86 +84,27 @@ Aye.modules.PullTime.events.CHAT_MSG_ADDON = function(...)
 			seconds = tonumber(seconds);
 			if seconds ==0 then
 				-- DBM Pull cancelled
-				Aye.modules.PullTime.PlannedPullTime = nil;
-				Aye.modules.PullTime.meters = {count = 0};
-				Aye.modules.PullTime.NinjaPull = false;
+				Aye.modules.PullTime.reset(false);
 			elseif seconds >0 then
 				-- DBM Pull
-				Aye.modules.PullTime.NinjaPull = false;
+				Aye.modules.PullTime.reset(false);
 				
-				-- mark when planned pull have to occur (in ms, using debugprofilestop())
-				Aye.modules.PullTime.PlannedPullTime = debugprofilestop() +seconds *1000; -- time when pull is planned (in ms)
+				-- mark when planned pull have to occur (in ms, using GetTime())
+				Aye.modules.PullTime.PlannedPullTime = GetTime() +seconds; -- time when pull is planned (in ms)
 				
-				-- set Aye.modules.PullTime.PlannedPullTime back to nil
-				-- watcher expires Aye.db.global.PullTime.metersDelayTime seconds after planned pull
-				if Aye.modules.PullTime.timer then Aye.modules.PullTime.timer:Cancel() end;
-				if enableDelay then
-					Aye.modules.PullTime.timer = C_Timer.NewTimer(seconds +Aye.db.global.PullTime.metersDelayTime +Aye.db.global.PullTime.antispamReportDelay /1000, Aye.modules.PullTime.report);
-				end;
+				-- plan to report pull time with no all informations after maximum delay time
+				Aye.modules.PullTime.timer = C_Timer.NewTimer(
+						seconds
+					+	Aye.db.global.PullTime.antispamReportDelay /1000
+					+	(
+								Aye.db.global.PullTime.enableDelay
+							and	Aye.db.global.PullTime.metersDelayTime
+							or	0
+						)
+					,	Aye.modules.PullTime.report
+				);
 			end;
 		end;
-	end;
-end;
-
-Aye.modules.PullTime.events.UNIT_THREAT_SITUATION_UPDATE = function(Unit)
-	if
-			not Aye.db.global.PullTime.enable
-		or	(
-					not Aye.db.global.PullTime.showAggroName
-				and	not Aye.db.global.PullTime.showAggroPullTime
-			)
-	then return end;
-	
-	-- note only first threat situation update
-	if Aye.modules.PullTime.meters.aggro then return end;
-	
-	-- check if Unit is known
-	if not Unit then return end;
-	
-	-- check if Unit's name is known
-	local name = UnitName(Unit);
-	if not name then return end;
-	
-	-- Raid Unit Aggro state changed
-	if Aye.modules.PullTime.PlannedPullTime then
-		-- Pull countdown (or upto Aye.db.global.PullTime.metersDelayTime seconds after)
-		
-		local player = false;
-		if (
-				UnitInRaid(Unit)
-			or	UnitInParty(Unit)
-			or	UnitIsUnit(Unit, "player")
-		) then
-			player = true;
-		end;
-		
-		if not player then
-			local members = max(1, GetNumGroupMembers());
-			for i = 1, members do
-				-- in raid, every player have "raidX" id where id begins from 1 and ends with member number
-				-- in party, there is always "player" and every NEXT members are "partyX" where X begins from 1
-				-- especially, in full party, there are: "player", "party1", "party2", "party3", "party4" and NO "party5"
-				local petID = (UnitInRaid("player") and "raid" ..i or (i ==1 and "" or "party" ..i -1)) .. "pet";
-				if UnitIsUnit(petID, Unit) then
-					local ownerID = UnitInRaid("player") and "raid" ..i or (i ==1 and "player" or "party" ..i -1);
-					local ownerName = UnitName(ownerID);
-					if ownerName then
-						name = name .." (" ..ownerName .."'s pet)";
-					end;
-				end;
-			end;
-		end;
-		
-		Aye.modules.PullTime.meters.aggro = {
-			-- pulling unit name
-			name = name,
-			
-			-- time beetween planned and real pull (in ms)
-			ms = debugprofilestop() - Aye.modules.PullTime.PlannedPullTime,
-		};
-		
-		Aye.modules.PullTime.meters.count = Aye.modules.PullTime.meters.count +1;
-		Aye.modules.PullTime.checkReport();
 	end;
 end;
 
@@ -160,23 +120,30 @@ Aye.modules.PullTime.events.ENCOUNTER_START = function(_, encounterName)
 			)
 	then return end;
 	
+	-- cooldown: prevent ENCOUNTER_START handle soon after ENCOUNTER_END
+	-- it looks like ENCOUNTER_START fires sometimes right after ENCOUNTER_END (before boss respawn)
+	if Aye.modules.PullTime.lastENCOUNTER_END and Aye.modules.PullTime.lastENCOUNTER_END +Aye.db.global.PullTime.antispamCooldown > GetTime() then return end;
+	
 	-- note only first encounter start occurence
 	if Aye.modules.PullTime.meters.encounter then return end;
 	
 	-- Ninja pull
 	if not Aye.modules.PullTime.PlannedPullTime then
 		Aye.modules.PullTime.NinjaPull = true;
-		Aye.modules.PullTime.PlannedPullTime = debugprofilestop();
-		
-		-- set Aye.modules.PullTime.PlannedPullTime back to nil
-		-- watcher expires Aye.db.global.PullTime.metersDelayTime seconds after ninja pull
-		if Aye.modules.PullTime.timer then Aye.modules.PullTime.timer:Cancel() end;
-		if enableDelay then
-			Aye.modules.PullTime.timer = C_Timer.NewTimer(Aye.db.global.PullTime.metersDelayTime +Aye.db.global.PullTime.antispamReportDelay /1000, Aye.modules.PullTime.report);
-		end;
+		Aye.modules.PullTime.PlannedPullTime = GetTime();
 	end;
 	
-	-- Pull countdown (or upto Aye.db.global.PullTime.metersDelayTime seconds after)
+	-- plan to report pull time with no all informations after maximum delay time
+	if Aye.modules.PullTime.timer then Aye.modules.PullTime.timer:Cancel() end;
+	Aye.modules.PullTime.timer = C_Timer.NewTimer(
+			Aye.db.global.PullTime.antispamReportDelay /1000
+		+	(
+					Aye.db.global.PullTime.enableDelay
+				and	Aye.db.global.PullTime.metersDelayTime
+				or	0
+			)
+		,	Aye.modules.PullTime.report
+	);
 	
 	-- link to current encounter
 	local link = encounterName;
@@ -208,7 +175,7 @@ Aye.modules.PullTime.events.ENCOUNTER_START = function(_, encounterName)
 	
 	Aye.modules.PullTime.meters.encounter = {
 		-- time beetween planned and real pull (in ms)
-		ms = debugprofilestop() - Aye.modules.PullTime.PlannedPullTime,
+		ms = (GetTime() - Aye.modules.PullTime.PlannedPullTime) *1000,
 		link = link or "",
 		instance = instanceLink or "",
 	};
@@ -218,16 +185,69 @@ Aye.modules.PullTime.events.ENCOUNTER_START = function(_, encounterName)
 end;
 
 Aye.modules.PullTime.events.ENCOUNTER_END = function()
-	-- disable notify for 10s after ENCOUNTER_END.
+	-- cooldown: prevent ENCOUNTER_START handle soon after ENCOUNTER_END
 	-- it looks like ENCOUNTER_START fires sometimes right after ENCOUNTER_END (before boss respawn)
-	-- 10s should be far enough to prevent it and few enough not to occur once pull (respawn time, pull time)
+	Aye.modules.PullTime.lastENCOUNTER_END = GetTime();
+end;
+
+Aye.modules.PullTime.events.UNIT_THREAT_SITUATION_UPDATE = function(Unit)
+	if
+			not Aye.db.global.PullTime.enable
+		or	(
+					not Aye.db.global.PullTime.showAggroName
+				and	not Aye.db.global.PullTime.showAggroPullTime
+			)
+	then return end;
 	
-	-- antispam: disable notifies for 10s
-	Aye.modules.PullTime.antispam.cooldown = true;
-	if Aye.modules.PullTime.antispam.timer then Aye.modules.PullTime.antispam.timer:Cancel() end;
-	Aye.modules.PullTime.antispam.timer = C_Timer.NewTimer(Aye.db.global.PullTime.antispamCooldown, function()
-		Aye.modules.PullTime.antispam.cooldown = false;
-	end);
+	-- note only first threat situation update
+	if Aye.modules.PullTime.meters.aggro then return end;
+	
+	-- check if Unit is known
+	if not Unit then return end;
+	
+	-- check if Unit's name is known
+	local name = UnitName(Unit);
+	if not name then return end;
+	
+	-- Raid Unit Aggro state changed
+	if Aye.modules.PullTime.PlannedPullTime then
+		local player = false;
+		if (
+				UnitInRaid(Unit)
+			or	UnitInParty(Unit)
+			or	UnitIsUnit(Unit, "player")
+		) then
+			player = true;
+		end;
+		
+		if not player then
+			local members = max(1, GetNumGroupMembers());
+			for i = 1, members do
+				-- in raid, every player have "raidX" id where id begins from 1 and ends with member number
+				-- in party, there is always "player" and every NEXT members are "partyX" where X begins from 1
+				-- especially, in full party, there are: "player", "party1", "party2", "party3", "party4" and NO "party5"
+				local petID = (UnitInRaid("player") and "raid" ..i or (i ==1 and "" or "party" ..i -1)) .. "pet";
+				if UnitIsUnit(petID, Unit) then
+					local ownerID = UnitInRaid("player") and "raid" ..i or (i ==1 and "player" or "party" ..i -1);
+					local ownerName = UnitName(ownerID);
+					if ownerName then
+						name = name .." (" ..ownerName .."'s pet)";
+					end;
+				end;
+			end;
+		end;
+		
+		Aye.modules.PullTime.meters.aggro = {
+			-- pulling unit name
+			name = name,
+			
+			-- time beetween planned and real pull (in ms)
+			ms = (GetTime() - Aye.modules.PullTime.PlannedPullTime) *1000,
+		};
+		
+		Aye.modules.PullTime.meters.count = Aye.modules.PullTime.meters.count +1;
+		Aye.modules.PullTime.checkReport();
+	end;
 end;
 
 Aye.modules.PullTime.events.UNIT_TARGET = function()
@@ -249,8 +269,6 @@ Aye.modules.PullTime.events.UNIT_TARGET = function()
 			if name then
 				-- One of bosses have a valid target
 				if Aye.modules.PullTime.PlannedPullTime then
-					-- Pull countdown (or upto Aye.db.global.PullTime.metersDelayTime seconds after)
-					
 					local player = false;
 					if (
 							UnitInRaid(Unit)
@@ -282,7 +300,7 @@ Aye.modules.PullTime.events.UNIT_TARGET = function()
 						name = name,
 						
 						-- time beetween planned and real pull (in ms)
-						ms = debugprofilestop() - Aye.modules.PullTime.PlannedPullTime,
+						ms = (GetTime() - Aye.modules.PullTime.PlannedPullTime) *1000,
 					};
 					
 					Aye.modules.PullTime.meters.count = Aye.modules.PullTime.meters.count +1;
@@ -327,8 +345,6 @@ Aye.modules.PullTime.events.COMBAT_LOG_EVENT_UNFILTERED = function(...)
 	
 	-- Raid Unit Hit state changed
 	if Aye.modules.PullTime.PlannedPullTime then
-		-- Pull countdown (or upto Aye.db.global.PullTime.metersDelayTime seconds after)
-		
 		local player = false;
 		if (
 				UnitInRaid(Unit)
@@ -373,7 +389,7 @@ Aye.modules.PullTime.events.COMBAT_LOG_EVENT_UNFILTERED = function(...)
 			spell = spell,
 			
 			-- time beetween planned and real pull (in ms)
-			ms = debugprofilestop() - Aye.modules.PullTime.PlannedPullTime,
+			ms = (GetTime() - Aye.modules.PullTime.PlannedPullTime) *1000,
 		};
 		
 		Aye.modules.PullTime.meters.count = Aye.modules.PullTime.meters.count +1;
@@ -457,12 +473,22 @@ end;
 -- @noparam
 -- @noreturn
 Aye.modules.PullTime.report = function()
+	-- Check if reporting is enabled
+	if not Aye.db.global.PullTime.enable then return end;
+	
+	-- Check for Antispam cooldown
+	if Aye.modules.PullTime.lastReport and Aye.modules.PullTime.lastReport +Aye.db.global.PullTime.antispamCooldown > GetTime() then
+		-- antispam: block report, reset data
+		Aye.modules.PullTime.reset(false);
+		
+		return;
+	end;
+	
+	-- Send Report Message
 	Aye.modules.PullTime.sendMessage();
 	
-	-- Kill DBM Pull countdown watcher
-	Aye.modules.PullTime.PlannedPullTime = nil;
-	Aye.modules.PullTime.meters = {count = 0};
-	Aye.modules.PullTime.NinjaPull = false;
+	-- Aye PullTime report received
+	Aye.modules.PullTime.reset(true);
 end;
 
 -- Send Report Message
@@ -470,12 +496,6 @@ end;
 -- @noparam
 -- @noreturn
 Aye.modules.PullTime.sendMessage = function()
-	-- Check if reporting is enabled
-	if not Aye.db.global.PullTime.enable then return end;
-	
-	-- Check for Antispam cooldown
-	if Aye.modules.PullTime.antispam.cooldown then return end;
-	
 	-- Check reporting conditions
 	if (
 			-- Disable
@@ -524,7 +544,7 @@ Aye.modules.PullTime.sendMessage = function()
 		and	Aye.utils.Player.IsBenched()
 	then return end;
 	
-	-- don't show simple "Pull" or "Ninja Pull" word
+	-- don't show simple "Pull" or "Ninja Pull" message
 	if Aye.modules.PullTime.meters.count == 0 then return end;
 	
 	-- Aye.db.global.PullTime.showNinjaPull settings
